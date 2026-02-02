@@ -156,7 +156,7 @@ Le design utilise :
 
 ## 🌐 Déploiement en ligne
 
-Votre site est déjà connecté à GitHub (`https://github.com/raphaelbentv/sitePersoReact.git`). Voici comment le publier en ligne :
+Votre site est connecté à GitHub (`https://github.com/raphaelbentv/Venio.git`). Voici comment le publier en ligne :
 
 ### Option 1 : IONOS (Hébergement avec domaine venio.paris) ⭐ Recommandé
 

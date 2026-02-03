@@ -14,7 +14,7 @@
 .manifeste-text {
   font-size: 28px;
   line-height: 1.6;
-  color: var(--orange-primary);
+  color: var(--primary);
   margin-bottom: 40px;
   font-weight: 900;
 }

@@ -37,8 +37,8 @@
 
 .cta-final-btn-primary {
   background: var(--bg-card);
-  color: var(--orange-primary);
-  border: 3px solid var(--orange-primary);
+  color: var(--primary);
+  border: 3px solid var(--primary);
   box-shadow: 
     12px 12px 24px var(--neumorphism-dark),
     -6px -6px 12px var(--neumorphism-light),
@@ -51,7 +51,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: var(--orange-primary);
+  background: var(--primary);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.4s;
@@ -89,8 +89,8 @@
 
 .cta-final-btn-outline {
   background: var(--bg-card);
-  color: var(--orange-primary);
-  border: 3px solid var(--orange-primary);
+  color: var(--primary);
+  border: 3px solid var(--primary);
   box-shadow: 
     12px 12px 24px var(--neumorphism-dark),
     -6px -6px 12px var(--neumorphism-light),
@@ -103,7 +103,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: var(--orange-primary);
+  background: var(--primary);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.4s;

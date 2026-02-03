@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
-import VantaBackground from '../components/VantaBackground'
-import DotsOverlay from '../components/DotsOverlay'
+import GradientMeshBackground from '../components/GradientMeshBackground'
 import SEO from '../components/SEO'
 import StructuredData from '../components/StructuredData'
 import './Realisations.css'
@@ -151,8 +150,7 @@ const Realisations = () => {
         keywords="réalisations Venio, portfolio, projets, sites web, développement, communication, études de cas"
       />
       <StructuredData type="realisations" />
-      <VantaBackground />
-      <DotsOverlay />
+      <GradientMeshBackground />
       <div className="realisations-page">
         <section className="realisations-hero">
           <h1>RÉALISATIONS</h1>

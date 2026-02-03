@@ -42,7 +42,7 @@ const SEO = ({
 
       {/* Additional meta tags */}
       <meta name="author" content="Venio" />
-      <meta name="theme-color" content="#FF6600" />
+      <meta name="theme-color" content="#0ea5e9" />
     </Helmet>
   )
 }

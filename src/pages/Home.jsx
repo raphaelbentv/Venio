@@ -6,8 +6,7 @@ import ServicesCore from '../components/ServicesCore'
 import Poles from '../components/Poles'
 import Citation from '../components/Citation'
 import CTAFinal from '../components/CTAFinal'
-import VantaBackground from '../components/VantaBackground'
-import DotsOverlay from '../components/DotsOverlay'
+import GradientMeshBackground from '../components/GradientMeshBackground'
 import SEO from '../components/SEO'
 import StructuredData from '../components/StructuredData'
 import './Home.css'
@@ -21,8 +20,7 @@ const Home = () => {
         keywords="agence digitale, développement web, communication, branding, stratégie digitale, Paris"
       />
       <StructuredData type="home" />
-      <VantaBackground />
-      <DotsOverlay />
+      <GradientMeshBackground />
       <Hero />
       <Manifeste />
       <ServicesCore />

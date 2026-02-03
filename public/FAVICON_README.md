@@ -18,7 +18,7 @@ Pour compléter l'optimisation SEO, vous devez créer les fichiers favicons suiv
 
 ## Design recommandé
 
-Utilisez le logo Venio avec la couleur orange (#FF6600) sur fond transparent ou sombre.
+Utilisez le logo Venio avec la couleur bleu ciel du thème (#0ea5e9) sur fond transparent ou sombre.
 
 ## Note
 

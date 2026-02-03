@@ -1,6 +1,5 @@
 import React from 'react'
-import VantaBackground from '../components/VantaBackground'
-import DotsOverlay from '../components/DotsOverlay'
+import GradientMeshBackground from '../components/GradientMeshBackground'
 import SEO from '../components/SEO'
 import StructuredData from '../components/StructuredData'
 import './ServicesPage.css'
@@ -14,8 +13,7 @@ const ServicesCommunication = () => {
         keywords="communication, branding, identité visuelle, stratégie éditoriale, storytelling, direction artistique"
       />
       <StructuredData type="service-communication" />
-      <VantaBackground />
-      <DotsOverlay />
+      <GradientMeshBackground />
       <div className="services-page">
         <section className="services-hero">
           <h1>COMMUNICATION & BRANDING</h1>

@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
-import VantaBackground from '../components/VantaBackground'
-import DotsOverlay from '../components/DotsOverlay'
+import GradientMeshBackground from '../components/GradientMeshBackground'
 import MathCaptcha from '../components/MathCaptcha'
 import SEO from '../components/SEO'
 import StructuredData from '../components/StructuredData'
@@ -33,8 +32,7 @@ const ServicesDeveloppement = () => {
         keywords="développement web, développement sur mesure, SaaS, plateforme web, architecture web, React, développement Paris"
       />
       <StructuredData type="service-developpement" />
-      <VantaBackground />
-      <DotsOverlay />
+      <GradientMeshBackground />
       <div className="services-page">
         <section className="services-hero">
           <h1>DÉVELOPPEMENT</h1>

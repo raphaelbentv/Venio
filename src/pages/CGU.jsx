@@ -1,6 +1,5 @@
 import React from 'react'
-import VantaBackground from '../components/VantaBackground'
-import DotsOverlay from '../components/DotsOverlay'
+import GradientMeshBackground from '../components/GradientMeshBackground'
 import SEO from '../components/SEO'
 import './CGU.css'
 
@@ -12,8 +11,7 @@ const CGU = () => {
         description="Conditions générales d'utilisation du site Venio. Modalités et conditions d'utilisation du site web."
         noindex={true}
       />
-      <VantaBackground />
-      <DotsOverlay />
+      <GradientMeshBackground />
       <div className="cgu-page">
         <section className="cgu-hero">
           <h1>CONDITIONS GÉNÉRALES D'UTILISATION</h1>

@@ -45,7 +45,7 @@
   left: 0;
   bottom: 0;
   width: 3px;
-  background: linear-gradient(180deg, var(--orange-primary), var(--orange-light), var(--orange-primary));
+  background: linear-gradient(180deg, var(--primary), var(--primary-light), var(--primary));
   background-size: 100% 200%;
   transform: scaleY(0);
   transition: transform 0.4s ease;
@@ -74,7 +74,7 @@
   font-size: 30px;
   font-weight: 900;
   margin-bottom: 20px;
-  color: var(--orange-light);
+  color: var(--primary-light);
   letter-spacing: -0.02em;
   text-transform: uppercase;
   position: relative;
@@ -84,7 +84,7 @@
 
 .expertise-card:hover h3 {
   transform: translateZ(10px);
-  color: var(--orange-primary);
+  color: var(--primary);
 }
 
 .expertise-card p {
@@ -120,7 +120,7 @@
 
 .expertise-list li::before {
   content: '→';
-  color: var(--orange-primary);
+  color: var(--primary);
   font-weight: 900;
 }
 

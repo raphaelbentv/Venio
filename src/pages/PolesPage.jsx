@@ -1,6 +1,5 @@
 import React from 'react'
-import VantaBackground from '../components/VantaBackground'
-import DotsOverlay from '../components/DotsOverlay'
+import GradientMeshBackground from '../components/GradientMeshBackground'
 import PoleCard from '../components/PoleCard'
 import SEO from '../components/SEO'
 import StructuredData from '../components/StructuredData'
@@ -36,8 +35,7 @@ const PolesPage = () => {
         keywords="DECISIO, CREATIO, FORMATIO, communication juridique, supports de cours, formations professionnelles"
       />
       <StructuredData type="poles" />
-      <VantaBackground />
-      <DotsOverlay />
+      <GradientMeshBackground />
       <div className="poles-page">
         <section className="poles-hero">
           <h1>NOS PÔLES</h1>

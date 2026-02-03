@@ -47,7 +47,7 @@
   left: 0;
   bottom: 0;
   width: 3px;
-  background: linear-gradient(180deg, var(--orange-primary), var(--orange-light), var(--orange-primary));
+  background: linear-gradient(180deg, var(--primary), var(--primary-light), var(--primary));
   background-size: 100% 200%;
   transform: scaleY(0);
   transition: transform 0.4s ease;
@@ -78,7 +78,7 @@
   margin-bottom: 15px;
   letter-spacing: -0.02em;
   text-transform: uppercase;
-  color: var(--orange-light);
+  color: var(--primary-light);
   position: relative;
   z-index: 2;
   transition: all 0.4s;
@@ -86,7 +86,7 @@
 
 .pole-card:hover .pole-name {
   transform: translateZ(10px);
-  color: var(--orange-primary);
+  color: var(--primary);
 }
 
 .pole-description {
@@ -105,7 +105,7 @@
 }
 
 .pole-link {
-  color: var(--orange-light);
+  color: var(--primary-light);
   text-decoration: none;
   font-weight: 900;
   font-size: 14px;
@@ -130,7 +130,7 @@
 
 .pole-link:hover {
   gap: 10px;
-  color: var(--orange-primary);
+  color: var(--primary);
   box-shadow: 
     4px 4px 8px var(--neumorphism-dark),
     -2px -2px 4px var(--neumorphism-light),

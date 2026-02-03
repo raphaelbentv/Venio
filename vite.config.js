@@ -7,7 +7,13 @@ export default defineConfig({
   server: {
     port: 5501,
     host: '0.0.0.0', // Permet l'accès depuis d'autres appareils sur le réseau local
-    open: true
-  }
+    open: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+    },
+  },
 })
 

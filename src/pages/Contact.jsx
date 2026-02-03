@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import emailjs from '@emailjs/browser'
-import VantaBackground from '../components/VantaBackground'
-import DotsOverlay from '../components/DotsOverlay'
+import GradientMeshBackground from '../components/GradientMeshBackground'
 import MathCaptcha from '../components/MathCaptcha'
 import SEO from '../components/SEO'
 import StructuredData from '../components/StructuredData'
@@ -93,8 +92,7 @@ const Contact = () => {
         keywords="contact Venio, formulaire contact, devis, consultation gratuite"
       />
       <StructuredData type="contact" />
-      <VantaBackground />
-      <DotsOverlay />
+      <GradientMeshBackground />
       <div className="contact-page">
         <section className="contact-hero">
           <h1>CONTACT</h1>

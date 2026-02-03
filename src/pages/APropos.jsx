@@ -1,7 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import VantaBackground from '../components/VantaBackground'
-import DotsOverlay from '../components/DotsOverlay'
+import GradientMeshBackground from '../components/GradientMeshBackground'
 import SEO from '../components/SEO'
 import StructuredData from '../components/StructuredData'
 import './APropos.css'
@@ -15,8 +14,7 @@ const APropos = () => {
         keywords="à propos Venio, agence digitale Paris, équipe Venio, expertise technique, vision"
       />
       <StructuredData type="apropos" />
-      <VantaBackground />
-      <DotsOverlay />
+      <GradientMeshBackground />
       <div className="apropos-page">
         <section className="apropos-hero">
           <h1>À PROPOS</h1>

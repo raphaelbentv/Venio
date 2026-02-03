@@ -72,7 +72,7 @@
   left: 0;
   bottom: 0;
   width: 3px;
-  background: linear-gradient(180deg, var(--orange-primary), var(--orange-light), var(--orange-primary));
+  background: linear-gradient(180deg, var(--primary), var(--primary-light), var(--primary));
   background-size: 100% 200%;
   transform: scaleY(0);
   transition: transform 0.4s ease;
@@ -100,7 +100,7 @@
 .service-core-card-title {
   font-size: 20px;
   font-weight: 900;
-  color: var(--orange-light);
+  color: var(--primary-light);
   margin-bottom: 15px;
   letter-spacing: -0.02em;
   text-transform: uppercase;
@@ -111,7 +111,7 @@
 
 .service-core-card:hover .service-core-card-title {
   transform: translateZ(10px);
-  color: var(--orange-primary);
+  color: var(--primary);
 }
 
 .service-core-card-desc {
@@ -132,7 +132,7 @@
 
 .service-core-card-link {
   font-size: 14px;
-  color: var(--orange-light);
+  color: var(--primary-light);
   font-weight: 900;
   display: inline-flex;
   align-items: center;
@@ -155,7 +155,7 @@
 
 .service-core-card-link:hover {
   gap: 10px;
-  color: var(--orange-primary);
+  color: var(--primary);
   box-shadow: 
     4px 4px 8px var(--neumorphism-dark),
     -2px -2px 4px var(--neumorphism-light),

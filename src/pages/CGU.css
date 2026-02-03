@@ -17,11 +17,11 @@
   margin-bottom: 20px;
   letter-spacing: 3px;
   text-shadow: 
-    0 0 10px rgba(255, 102, 0, 0.5),
-    0 0 20px rgba(255, 102, 0, 0.4),
-    0 0 30px rgba(255, 102, 0, 0.3),
-    0 0 40px rgba(255, 102, 0, 0.2),
-    0 0 70px rgba(255, 102, 0, 0.1);
+    0 0 10px rgba(14, 165, 233, 0.5),
+    0 0 20px rgba(14, 165, 233, 0.4),
+    0 0 30px rgba(14, 165, 233, 0.3),
+    0 0 40px rgba(14, 165, 233, 0.2),
+    0 0 70px rgba(14, 165, 233, 0.1);
   animation: neonPulse 3s ease-in-out infinite;
   word-wrap: break-word;
   overflow-wrap: break-word;
@@ -31,19 +31,19 @@
 @keyframes neonPulse {
   0%, 100% {
     text-shadow: 
-      0 0 10px rgba(255, 102, 0, 0.5),
-      0 0 20px rgba(255, 102, 0, 0.4),
-      0 0 30px rgba(255, 102, 0, 0.3),
-      0 0 40px rgba(255, 102, 0, 0.2),
-      0 0 70px rgba(255, 102, 0, 0.1);
+      0 0 10px rgba(14, 165, 233, 0.5),
+      0 0 20px rgba(14, 165, 233, 0.4),
+      0 0 30px rgba(14, 165, 233, 0.3),
+      0 0 40px rgba(14, 165, 233, 0.2),
+      0 0 70px rgba(14, 165, 233, 0.1);
   }
   50% {
     text-shadow: 
-      0 0 15px rgba(255, 102, 0, 0.7),
-      0 0 25px rgba(255, 102, 0, 0.6),
-      0 0 35px rgba(255, 102, 0, 0.5),
-      0 0 50px rgba(255, 102, 0, 0.4),
-      0 0 80px rgba(255, 102, 0, 0.2);
+      0 0 15px rgba(14, 165, 233, 0.7),
+      0 0 25px rgba(14, 165, 233, 0.6),
+      0 0 35px rgba(14, 165, 233, 0.5),
+      0 0 50px rgba(14, 165, 233, 0.4),
+      0 0 80px rgba(14, 165, 233, 0.2);
   }
 }
 
@@ -100,7 +100,7 @@
   left: 0;
   bottom: 0;
   width: 3px;
-  background: linear-gradient(180deg, var(--orange-primary), var(--orange-light), var(--orange-primary));
+  background: linear-gradient(180deg, var(--primary), var(--primary-light), var(--primary));
   background-size: 100% 200%;
   transform: scaleY(0);
   transition: transform 0.4s ease;
@@ -127,7 +127,7 @@
 
 .cgu-section h2 {
   font-size: 32px;
-  color: var(--orange-light);
+  color: var(--primary-light);
   margin-bottom: 20px;
   font-weight: 900;
   letter-spacing: -0.02em;
@@ -139,7 +139,7 @@
 
 .cgu-section:hover h2 {
   transform: translateZ(10px);
-  color: var(--orange-primary);
+  color: var(--primary);
 }
 
 .cgu-section h3 {

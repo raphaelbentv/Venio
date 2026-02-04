@@ -49,9 +49,12 @@ const AdminList = () => {
         </div>
         <div className="admin-header">
           <h1>Comptes admin</h1>
-          <div className="admin-actions">
-            <Link className="portal-button" to="/admin/comptes-admin/nouveau">
-              + Nouvel administrateur
+          <div className="admin-actions portal-actions-reveal">
+            <Link className="portal-button portal-action-link" to="/admin/comptes-admin/nouveau" title="Nouvel administrateur">
+              <span className="portal-action-icon" aria-hidden>
+                <svg viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><line x1="19" y1="8" x2="19" y2="14" /><line x1="22" y1="11" x2="16" y2="11" /></svg>
+              </span>
+              <span className="portal-action-label">Nouvel administrateur</span>
             </Link>
           </div>
         </div>

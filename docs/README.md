@@ -2,6 +2,16 @@
 
 Site web de Venio développé avec React, Vite et React Router.
 
+## 📚 Documentation (dossier `docs/`)
+
+| Dossier | Contenu |
+|--------|--------|
+| [admin/](./admin/) | Design et contenu de l’interface admin |
+| [deploiement/](./deploiement/) | Guides déploiement IONOS, config, debug |
+| [design/](./design/) | Arrière-plans, gradients, changements visuels |
+| [optimisation/](./optimisation/) | Performance GPU, SEO, résumés d’optimisations |
+| [projet/](./projet/) | Système de contenu projet, tests, README projet |
+
 ## 📋 Démarrage rapide
 
 ### Pour développer localement
@@ -20,7 +30,7 @@ git push origin master
 # Le site se déploie automatiquement en 2-5 minutes !
 ```
 
-👉 **📖 Guide déploiement automatique : [DEPLOY_AUTOMATIQUE.md](./DEPLOY_AUTOMATIQUE.md)** (configuration une seule fois, puis automatique)
+👉 **📖 Guide déploiement automatique : [DEPLOY_AUTOMATIQUE.md](./deploiement/DEPLOY_AUTOMATIQUE.md)** (configuration une seule fois, puis automatique)
 
 **Option 2 : Déploiement manuel via FTP**
 ```bash
@@ -28,7 +38,7 @@ npm run deploy:ionos   # Build + vérification + instructions
 # Puis uploader le contenu de dist/ via FTP sur IONOS
 ```
 
-👉 **📖 Guide déploiement manuel : [DEPLOY_IONOS.md](./DEPLOY_IONOS.md)** (instructions détaillées étape par étape)
+👉 **📖 Guide déploiement manuel : [DEPLOY_IONOS.md](./deploiement/DEPLOY_IONOS.md)** (instructions détaillées étape par étape)
 👉 **Voir aussi la section [🌐 Déploiement en ligne](#-déploiement-en-ligne) pour plus de détails techniques**
 
 ## 🚀 Installation

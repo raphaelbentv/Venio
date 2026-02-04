@@ -27,7 +27,11 @@ const ServicesCore = () => {
         <h2 className="services-core-title">Les 3 activités principales de Venio</h2>
         <div className="services-core-grid">
           {services.map((service, index) => (
-            <Link key={index} to={service.link} className="service-core-card">
+            <Link 
+              key={index} 
+              to={service.link} 
+              className="service-core-card"
+            >
               <h3 className="service-core-card-title">{service.title}</h3>
               <p className="service-core-card-desc">{service.description}</p>
               <span className="service-core-card-link">En savoir plus →</span>

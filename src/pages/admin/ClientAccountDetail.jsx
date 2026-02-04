@@ -70,9 +70,12 @@ const ClientAccountDetail = () => {
                 <h1 style={{ marginBottom: '8px' }}>{user.name}</h1>
                 <p style={{ color: 'rgba(255, 255, 255, 0.6)', margin: 0 }}>{user.email}</p>
               </div>
-              <div className="admin-actions">
-                <Link className="portal-button" to={`/admin/projets/nouveau?clientId=${userId}`}>
-                  + Ajouter un projet
+              <div className="admin-actions portal-actions-reveal">
+                <Link className="portal-button portal-action-link" to={`/admin/projets/nouveau?clientId=${userId}`} title="Ajouter un projet">
+                  <span className="portal-action-icon" aria-hidden>
+                    <svg viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" /></svg>
+                  </span>
+                  <span className="portal-action-label">Ajouter un projet</span>
                 </Link>
               </div>
             </div>

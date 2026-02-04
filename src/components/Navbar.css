@@ -330,63 +330,7 @@ nav::after {
   opacity: 0.8;
 }
 
-.nav-cta {
-  background: var(--bg-card);
-  color: var(--primary);
-  padding: 10px 24px;
-  font-weight: 900;
-  transition: all 0.3s ease;
-  border: 3px solid var(--primary);
-  position: relative;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  backdrop-filter: blur(10px);
-  clip-path: polygon(
-    0 0,
-    calc(100% - 12px) 0,
-    100% 12px,
-    100% 100%,
-    12px 100%,
-    0 calc(100% - 12px)
-  );
-  box-shadow: 
-    12px 12px 24px var(--neumorphism-dark),
-    -6px -6px 12px var(--neumorphism-light),
-    inset -4px -4px 8px rgba(0, 0, 0, 0.3),
-    inset 4px 4px 8px rgba(255, 255, 255, 0.03);
-  overflow: hidden;
-  isolation: isolate;
-}
-
-.nav-cta::before {
-  display: none;
-}
-
-.nav-cta::after {
-  display: none;
-}
-
-.nav-cta:hover {
-  background: var(--primary);
-  color: #000;
-  box-shadow: 
-    6px 6px 12px var(--neumorphism-dark),
-    -3px -3px 6px var(--neumorphism-light),
-    inset 4px 4px 8px rgba(0, 0, 0, 0.4),
-    inset -4px -4px 8px rgba(255, 255, 255, 0.02),
-    0 0 30px rgba(14, 165, 233, 0.6);
-  transform: translateY(-5px);
-}
-
-.nav-cta.nav-link-icon:hover .nav-icon {
-  filter: drop-shadow(0 0 12px rgba(0, 0, 0, 0.8));
-}
-
-.nav-cta:active {
-  box-shadow: 
-    inset 6px 6px 12px var(--neumorphism-dark),
-    inset -4px -4px 8px var(--neumorphism-light);
-}
+/* Styles CTA retirés - Contact utilise maintenant les styles standard */
 
 .nav-portal {
   display: inline-flex;
@@ -441,7 +385,7 @@ nav::after {
   position: absolute;
   bottom: -45px;
   left: 50%;
-  transform: translateX(-50%) scale(0.8);
+  transform: translateX(-50%) scale(0.95);
   background: linear-gradient(135deg, rgba(20, 20, 20, 0.98) 0%, rgba(15, 15, 15, 1) 100%);
   color: #ffffff;
   padding: 8px 16px;
@@ -450,8 +394,9 @@ nav::after {
   font-weight: 600;
   white-space: nowrap;
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
   border: 1px solid rgba(14, 165, 233, 0.5);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), 0 0 20px rgba(14, 165, 233, 0.3);
   z-index: 9999;
@@ -479,16 +424,32 @@ nav::after {
   border-bottom-color: rgba(20, 20, 20, 0.98);
 }
 
+/* Dévoiler uniquement le libellé du lien survolé (pas toute la nav) */
 .nav-link-icon:hover .nav-link-text {
   opacity: 1;
   transform: translateX(-50%) scale(1);
   bottom: -50px;
+  visibility: visible;
 }
 
 /* Ne pas afficher le tooltip quand le dropdown est ouvert */
 .dropdown:hover .nav-link-icon .nav-link-text {
   opacity: 0 !important;
   pointer-events: none !important;
+  visibility: hidden !important;
+}
+
+/* En GPU OFF : forcer l’affichage des infos au survol (priorité sur les règles globales) */
+body.gpu-off .nav-link-icon:hover .nav-link-text {
+  opacity: 1 !important;
+  transform: translateX(-50%) scale(1) !important;
+  visibility: visible !important;
+  transition-duration: 0.15s !important;
+}
+
+body.gpu-off .dropdown:hover .nav-link-icon .nav-link-text {
+  opacity: 0 !important;
+  visibility: hidden !important;
 }
 
 .nav-link-icon:hover .nav-icon {
@@ -496,15 +457,7 @@ nav::after {
   filter: drop-shadow(0 0 8px rgba(14, 165, 233, 0.6));
 }
 
-/* Ajustement pour le bouton CTA */
-.nav-cta.nav-link-icon {
-  padding: 12px 16px;
-}
-
-.nav-cta.nav-link-icon .nav-icon {
-  width: 20px;
-  height: 20px;
-}
+/* Ajustement pour le bouton CTA - retiré */
 
 /* Ajustement pour les portails */
 .nav-portal.nav-link-icon {
@@ -686,25 +639,7 @@ nav::after {
   transform: translateX(5px);
 }
 
-.mobile-nav-cta {
-  background: var(--primary);
-  color: #000;
-  border: 3px solid var(--primary);
-  font-weight: 900;
-  margin-top: 10px;
-  box-shadow: 
-    12px 12px 24px var(--neumorphism-dark),
-    -6px -6px 12px var(--neumorphism-light);
-}
-
-.mobile-nav-cta:hover {
-  background: var(--primary-light);
-  border-color: var(--primary-light);
-  transform: translateY(-3px);
-  box-shadow: 
-    6px 6px 12px var(--neumorphism-dark),
-    -3px -3px 6px var(--neumorphism-light);
-}
+/* Styles mobile-nav-cta retirés - Contact utilise maintenant les styles standard */
 
 .mobile-nav-item {
   position: relative;

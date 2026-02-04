@@ -30,9 +30,12 @@ const ClientAccountList = () => {
         </div>
         <div className="admin-header">
           <h1>Comptes clients</h1>
-          <div className="admin-actions">
-            <Link className="portal-button" to="/admin/comptes-clients/nouveau">
-              + Nouveau compte
+          <div className="admin-actions portal-actions-reveal">
+            <Link className="portal-button portal-action-link" to="/admin/comptes-clients/nouveau" title="Nouveau compte">
+              <span className="portal-action-icon" aria-hidden>
+                <svg viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" /></svg>
+              </span>
+              <span className="portal-action-label">Nouveau compte</span>
             </Link>
           </div>
         </div>

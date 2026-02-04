@@ -88,29 +88,44 @@ const AdminDashboard = () => {
       <div className="portal-card">
         <div className="admin-header">
           <h1>Tableau de bord Admin</h1>
-          <div className="admin-actions">
+          <div className="admin-actions portal-actions-reveal">
             {canManageClients && (
-              <Link className="portal-button" to="/admin/comptes-clients">
-                Comptes clients
+              <Link className="portal-button portal-action-link" to="/admin/comptes-clients" title="Comptes clients">
+                <span className="portal-action-icon" aria-hidden>
+                  <svg viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+                </span>
+                <span className="portal-action-label">Comptes clients</span>
               </Link>
             )}
             {canManageAdmins && (
-              <Link className="portal-button" to="/admin/comptes-admin">
-                Comptes admin
+              <Link className="portal-button portal-action-link" to="/admin/comptes-admin" title="Comptes admin">
+                <span className="portal-action-icon" aria-hidden>
+                  <svg viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+                </span>
+                <span className="portal-action-label">Comptes admin</span>
               </Link>
             )}
             {canEditProjects && (
-              <Link className="portal-button secondary" to="/admin/projets/nouveau">
-                Nouveau projet
+              <Link className="portal-button secondary portal-action-link" to="/admin/projets/nouveau" title="Nouveau projet">
+                <span className="portal-action-icon" aria-hidden>
+                  <svg viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" /></svg>
+                </span>
+                <span className="portal-action-label">Nouveau projet</span>
               </Link>
             )}
             {canViewCrm && (
-              <Link className="portal-button" to="/admin/crm">
-                CRM & Prospection
+              <Link className="portal-button portal-action-link" to="/admin/crm" title="CRM & Prospection">
+                <span className="portal-action-icon" aria-hidden>
+                  <svg viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><line x1="19" y1="8" x2="19" y2="14" /><line x1="22" y1="11" x2="16" y2="11" /></svg>
+                </span>
+                <span className="portal-action-label">CRM & Prospection</span>
               </Link>
             )}
-            <button className="portal-button secondary" onClick={logout} type="button">
-              Se déconnecter
+            <button className="portal-button secondary portal-action-link" onClick={logout} type="button" title="Se déconnecter">
+              <span className="portal-action-icon" aria-hidden>
+                <svg viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
+              </span>
+              <span className="portal-action-label">Se déconnecter</span>
             </button>
           </div>
         </div>

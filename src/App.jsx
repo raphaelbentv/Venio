@@ -2,6 +2,7 @@ import React from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
+import PerformanceControl from './components/PerformanceControl'
 import ProtectedRoute from './components/ProtectedRoute'
 import Home from './pages/Home'
 import ServicesCommunication from './pages/ServicesCommunication'
@@ -35,6 +36,7 @@ function App() {
   return (
     <>
       <Navbar />
+      <PerformanceControl />
       <Routes>
         {/* Site vitrine */}
         <Route path="/" element={<Home />} />

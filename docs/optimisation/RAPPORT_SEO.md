@@ -78,7 +78,7 @@ Date: 2025-11-16
 **Problème:** Les fichiers favicons sont référencés mais n'existent pas encore.
 
 **Recommandation:** 
-- Voir `public/FAVICON_README.md` pour les instructions
+- Voir `../../public/FAVICON_README.md` pour les instructions
 - Créer les fichiers favicons requis
 
 ### 4. Logo dans Structured Data
@@ -112,7 +112,7 @@ Date: 2025-11-16
 
 1. ✅ **FAIT:** Corriger les multiples H1 dans Realisations.jsx
 2. **IMPORTANT:** Créer l'image Open Graph (og-image.jpg) - 1200x630px recommandé
-3. **IMPORTANT:** Créer les favicons (voir public/FAVICON_README.md)
+3. **IMPORTANT:** Créer les favicons (voir ../../public/FAVICON_README.md)
 4. **MOYEN:** Vérifier que logo.png existe ou mettre à jour l'URL dans StructuredData.jsx
 
 ## ✅ Conclusion

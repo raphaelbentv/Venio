@@ -102,7 +102,7 @@ const Navbar = () => {
           
           <Link 
             to="/contact" 
-            className={`nav-link nav-cta nav-link-icon ${location.pathname === '/contact' ? 'active' : ''}`}
+            className={`nav-link nav-link-icon ${location.pathname === '/contact' ? 'active' : ''}`}
             data-tooltip="Contact"
           >
             <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
@@ -200,7 +200,7 @@ const Navbar = () => {
           <Link to="/a-propos" className="mobile-nav-link" onClick={closeMobileMenu}>
             À propos
           </Link>
-          <Link to="/contact" className="mobile-nav-link mobile-nav-cta" onClick={closeMobileMenu}>
+          <Link to="/contact" className="mobile-nav-link" onClick={closeMobileMenu}>
             Contact
           </Link>
           <Link to="/espace-client" className="mobile-nav-link mobile-nav-portal" onClick={closeMobileMenu}>

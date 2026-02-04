@@ -206,9 +206,12 @@ const CrmBoard = () => {
               Pipeline commercial avec attribution, relances et automatisations
             </p>
           </div>
-          <div className="admin-actions">
-            <Link className="portal-button secondary" to="/admin/comptes-admin">
-              Comptes admin
+          <div className="admin-actions portal-actions-reveal">
+            <Link className="portal-button secondary portal-action-link" to="/admin/comptes-admin" title="Comptes admin">
+              <span className="portal-action-icon" aria-hidden>
+                <svg viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+              </span>
+              <span className="portal-action-label">Comptes admin</span>
             </Link>
           </div>
         </div>

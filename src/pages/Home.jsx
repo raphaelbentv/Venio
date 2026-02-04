@@ -7,6 +7,7 @@ import Poles from '../components/Poles'
 import Citation from '../components/Citation'
 import CTAFinal from '../components/CTAFinal'
 import GradientMeshBackground from '../components/GradientMeshBackground'
+import ParallaxDecorations from '../components/ParallaxDecorations'
 import SEO from '../components/SEO'
 import StructuredData from '../components/StructuredData'
 import './Home.css'
@@ -21,6 +22,7 @@ const Home = () => {
       />
       <StructuredData type="home" />
       <GradientMeshBackground />
+      <ParallaxDecorations />
       <Hero />
       <Manifeste />
       <ServicesCore />

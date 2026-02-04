@@ -2,9 +2,26 @@ import React, { useEffect, useState } from 'react'
 import './GradientMeshBackground.css'
 
 const GradientMeshBackground = () => {
+  const [gpuOff, setGpuOff] = useState(() => document.body.classList.contains('gpu-off'))
   const [reducedLayers, setReducedLayers] = useState(false)
+  const [disableAnimations, setDisableAnimations] = useState(false)
+  const [scrollY, setScrollY] = useState(0)
 
   useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setGpuOff(document.body.classList.contains('gpu-off'))
+    })
+
+    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] })
+
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (gpuOff) {
+      return undefined
+    }
+
     // Détecter les appareils bas de gamme
     const isLowEnd = () => {
       // Vérifier la mémoire disponible
@@ -26,12 +43,95 @@ const GradientMeshBackground = () => {
     }
 
     setReducedLayers(isLowEnd())
-  }, [])
+
+    // Détecter les performances en temps réel (seulement si la page est visible)
+    let frameCount = 0
+    let lastTime = performance.now()
+    let animationFrameId
+    let isPageVisible = !document.hidden
+
+    const checkPerformance = () => {
+      if (!isPageVisible) return
+      
+      frameCount++
+      const currentTime = performance.now()
+      
+      // Vérifier les FPS toutes les 3 secondes
+      if (currentTime - lastTime >= 3000) {
+        const fps = Math.round((frameCount * 1000) / (currentTime - lastTime))
+        
+        // Si FPS < 25, désactiver les animations
+        if (fps < 25) {
+          setDisableAnimations(true)
+        }
+        
+        frameCount = 0
+        lastTime = currentTime
+      }
+      
+      animationFrameId = requestAnimationFrame(checkPerformance)
+    }
+
+    // Gérer la visibilité de la page
+    const handleVisibilityChange = () => {
+      isPageVisible = !document.hidden
+      if (!isPageVisible && animationFrameId) {
+        cancelAnimationFrame(animationFrameId)
+      } else if (isPageVisible) {
+        frameCount = 0
+        lastTime = performance.now()
+        checkPerformance()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    // Démarrer la vérification après 5 secondes (laisser le temps au chargement)
+    const timeoutId = setTimeout(() => {
+      if (isPageVisible) {
+        checkPerformance()
+      }
+    }, 5000)
+
+    return () => {
+      clearTimeout(timeoutId)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId)
+      }
+    }
+  }, [gpuOff])
+
+  // Parallax effect on scroll - TRÈS subtil
+  useEffect(() => {
+    if (gpuOff || disableAnimations) return
+
+    const handleScroll = () => {
+      setScrollY(window.pageYOffset)
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [gpuOff, disableAnimations])
+
+  if (gpuOff) {
+    return <div className="gradient-mesh-background gpu-off-static" />
+  }
+
+  // Parallax très subtil - vitesses réduites de moitié
+  const parallaxOffset1 = scrollY * 0.02
+  const parallaxOffset2 = scrollY * 0.03
 
   return (
-    <div className="gradient-mesh-background">
-      <div className="gradient-mesh-layer gradient-mesh-layer-1"></div>
-      <div className="gradient-mesh-layer gradient-mesh-layer-2"></div>
+    <div className={`gradient-mesh-background ${disableAnimations ? 'no-animations' : ''}`}>
+      <div 
+        className="gradient-mesh-layer gradient-mesh-layer-1"
+        style={{ transform: `translateY(${parallaxOffset1}px)` }}
+      ></div>
+      <div 
+        className="gradient-mesh-layer gradient-mesh-layer-2"
+        style={{ transform: `translateY(${parallaxOffset2}px)` }}
+      ></div>
       {!reducedLayers && (
         <>
           <div className="gradient-mesh-layer gradient-mesh-layer-3"></div>

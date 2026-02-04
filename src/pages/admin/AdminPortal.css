@@ -107,6 +107,10 @@
   align-items: center;
 }
 
+.admin-actions.portal-actions-reveal {
+  gap: 8px;
+}
+
 /* Stats Cards */
 .admin-stats-grid {
   display: grid;

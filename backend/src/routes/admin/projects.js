@@ -128,6 +128,9 @@ router.post('/', requirePermission(PERMISSIONS.EDIT_PROJECTS), async (req, res, 
     if (!client || client.role !== 'CLIENT') {
       return res.status(400).json({ error: 'Invalid clientId' })
     }
+    if (!['PROSPECT', 'ACTIF', 'EN_PAUSE'].includes(client.status || 'ACTIF')) {
+      return res.status(422).json({ error: 'Client must be active before creating a project' })
+    }
 
     const options = normalizeOptions(req.body || {})
 

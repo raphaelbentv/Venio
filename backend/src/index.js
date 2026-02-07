@@ -8,6 +8,7 @@ import authRoutes from './routes/auth.js'
 import projectRoutes from './routes/projects.js'
 import documentRoutes from './routes/documents.js'
 import adminUserRoutes from './routes/admin/users.js'
+import adminClientRoutes from './routes/admin/clients.js'
 import adminAdminsRoutes from './routes/admin/admins.js'
 import adminProjectRoutes from './routes/admin/projects.js'
 import adminProjectSectionsRoutes from './routes/admin/projectSections.js'
@@ -45,6 +46,7 @@ app.use('/api/projects', projectRoutes)
 app.use('/api/documents', documentRoutes)
 
 app.use('/api/admin/users', adminUserRoutes)
+app.use('/api/admin/clients', adminClientRoutes)
 app.use('/api/admin/admins', adminAdminsRoutes)
 app.use('/api/admin/projects', adminProjectRoutes)
 app.use('/api/admin/projects', adminProjectSectionsRoutes)

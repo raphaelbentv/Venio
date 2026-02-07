@@ -68,7 +68,7 @@
 .service-core-card-title {
   font-size: 13px;
   font-weight: 600;
-  color: #87CEEB;
+  color: rgba(255, 255, 255, 0.4);
   margin-bottom: 40px;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -78,7 +78,7 @@
 }
 
 .service-core-card:hover .service-core-card-title {
-  color: #A8E0F0;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .service-core-card-content {
@@ -116,11 +116,6 @@
   line-height: 1.9;
 }
 
-.service-core-highlight {
-  color: #fff;
-  font-weight: 600;
-}
-
 .service-result {
   color: rgba(255, 255, 255, 0.9);
   font-weight: 500;
@@ -134,10 +129,6 @@
 
 .service-core-card:hover .service-solution {
   color: rgba(255, 255, 255, 0.95);
-}
-
-.service-core-card:hover .service-core-highlight {
-  color: #fff;
 }
 
 .service-core-card:hover .service-result {

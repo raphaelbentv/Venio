@@ -3,7 +3,7 @@ name: 🚀 Déploiement automatique sur Ionos
 on:
   push:
     branches:
-      - master  # Déploie automatiquement quand vous poussez sur master
+      - main  # Déploie automatiquement quand vous poussez sur main
     paths-ignore:
       - 'README.md'
       - 'DEPLOY_IONOS.md'

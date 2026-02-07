@@ -30,7 +30,12 @@ jobs:
           cache: 'npm'
 
       - name: 📥 Installer les dépendances
-        run: npm ci
+        run: npm ci --include=dev
+
+      - name: 🔧 Configurer l'environnement de build
+        run: |
+          echo "NODE_ENV=production" >> $GITHUB_ENV
+          echo "Build environment configured"
 
       - name: 🏗️ Build du projet
         run: npm run build:ionos

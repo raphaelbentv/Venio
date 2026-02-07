@@ -7,7 +7,7 @@ const CTAFinal = () => {
     <section className="cta-final">
       <div className="cta-final-container">
         <Link to="/contact" className="cta-final-btn cta-final-btn-primary">
-          Parlons stratégie
+          Parlons. Sans filtre.
         </Link>
         <Link to="/realisations" className="cta-final-btn cta-final-btn-outline">
           Voir nos réalisations

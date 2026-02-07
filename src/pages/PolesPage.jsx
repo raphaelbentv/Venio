@@ -31,7 +31,7 @@ const PolesPage = () => {
     <>
       <SEO 
         title="Nos Pôles"
-        description="Venio opère à travers trois entités spécialisées : DECISIO (communication juridique), CREATIO (supports de cours) et FORMATIO (formations professionnelles). Expertise approfondie et cohérence stratégique."
+        description="Trois pôles. Trois spécialisations. DECISIO (communication juridique), CREATIO (supports de cours), FORMATIO (formations professionnelles). Spécialisation réelle, pas divisions marketing."
         keywords="DECISIO, CREATIO, FORMATIO, communication juridique, supports de cours, formations professionnelles"
       />
       <StructuredData type="poles" />
@@ -39,14 +39,17 @@ const PolesPage = () => {
       <div className="poles-page">
         <section className="poles-hero">
           <h1>NOS PÔLES</h1>
-          <p className="poles-subtitle">Trois entités spécialisées, une vision cohérente</p>
+          <p className="poles-subtitle">Trois spécialisations. Pas de généralisme.</p>
         </section>
 
         <section className="poles-content">
           <div className="poles-intro">
             <p>
-              Venio opère à travers trois entités spécialisées, chacune dédiée à un domaine d'excellence. 
-              Ces pôles permettent une expertise approfondie tout en maintenant une cohérence stratégique globale.
+              Venio opère à travers trois pôles spécialisés. Pas des divisions marketing.
+              Des entités dédiées à des domaines précis, avec une expertise réelle.
+            </p>
+            <p>
+              Spécialisation vs généralisme. Profondeur vs surface.
             </p>
           </div>
 

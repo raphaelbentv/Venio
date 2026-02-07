@@ -88,7 +88,7 @@ const Contact = () => {
     <>
       <SEO 
         title="Contact"
-        description="Contactez Venio pour discuter de votre projet. Formulaire de contact sécurisé ou email direct à contact@venio.paris. Réponse sous 24h."
+        description="Venio ne travaille pas avec tout le monde. Si vous cherchez du rapide et du pas cher, ce n'est pas ici. Si vous voulez construire quelque chose qui dure, parlons. Réponse sous 48h."
         keywords="contact Venio, formulaire contact, devis, consultation gratuite"
       />
       <StructuredData type="contact" />
@@ -96,21 +96,37 @@ const Contact = () => {
       <div className="contact-page">
         <section className="contact-hero">
           <h1>CONTACT</h1>
-          <p className="contact-subtitle">Parlons de votre projet</p>
+          <p className="contact-subtitle">Avant de nous contacter</p>
         </section>
 
         <section className="contact-content">
+          <div className="contact-qualification">
+            <p>
+              Venio ne travaille pas avec tout le monde.
+            </p>
+            <p>
+              Si vous cherchez du rapide et du pas cher, ce n&apos;est pas ici.
+              Si vous cherchez quelqu&apos;un pour valider vos idées sans réfléchir, ce n&apos;est pas ici.
+              Si vous voulez un template WordPress personnalisé, ce n&apos;est pas ici.
+            </p>
+            <p>
+              Si vous voulez construire quelque chose qui dure, qui a du sens, qui est pensé pour vous, alors oui.
+            </p>
+            <p>
+              Nous répondons sous 48h. Si votre projet a du sens, on vous le dira. Sinon aussi.
+            </p>
+          </div>
+
           <div className="contact-grid">
             <div className="contact-info">
-              <h2>Informations</h2>
+              <h2>Email direct</h2>
               <div className="info-item">
-                <h3>Email</h3>
                 <a href="mailto:contact@venio.paris">contact@venio.paris</a>
               </div>
             </div>
 
             <div className="contact-form-wrapper">
-              <h2>Formulaire de contact</h2>
+              <h2>Formulaire</h2>
               <form className="contact-form" onSubmit={handleSubmit}>
                 <div className="form-row">
                   <input 

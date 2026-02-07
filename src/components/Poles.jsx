@@ -27,7 +27,7 @@ const Poles = () => {
   return (
     <section className="poles" id="poles">
       <div className="section-header">
-        <h2 className="section-title">Nos entités spécialisées</h2>
+        <h2 className="section-title">Trois pôles. Trois spécialisations.</h2>
       </div>
       <div className="poles-grid">
         {poles.map((pole, index) => (

@@ -6,8 +6,8 @@ const Citation = () => {
     <section className="citation">
       <div className="citation-content">
         <p className="citation-text">
-          "Nous ne créons pas des sites.<br />
-          Nous créons des systèmes."
+          "Si vous cherchez quelqu&apos;un pour vous dire oui,<br />
+          vous êtes au mauvais endroit."
         </p>
       </div>
     </section>

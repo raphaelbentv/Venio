@@ -9,7 +9,7 @@ const ServicesCommunication = () => {
     <>
       <SEO 
         title="Communication & Branding"
-        description="Identités visuelles cohérentes, stratégies éditoriales structurées, contenus premium et storytelling. Direction artistique pour entreprises premium et marques modernes."
+        description="Avoir un logo sur Canva, ce n'est pas avoir une marque. Identités cohérentes qui ont une colonne vertébrale. Stratégies éditoriales pensées. Pas de tendances, pas de générique. Ce qui dure."
         keywords="communication, branding, identité visuelle, stratégie éditoriale, storytelling, direction artistique"
       />
       <StructuredData type="service-communication" />
@@ -17,55 +17,94 @@ const ServicesCommunication = () => {
       <div className="services-page">
         <section className="services-hero">
           <h1>COMMUNICATION & BRANDING</h1>
-          <p className="services-subtitle">Identités. Stratégies. Contenu.</p>
+          <p className="services-subtitle">
+            Avoir un logo sur Canva,<br />
+            ce n&apos;est pas avoir une marque.
+          </p>
         </section>
 
         <section className="services-content">
           <div className="services-section">
-            <h2>Ce que nous créons</h2>
+            <h2>Ce que le marché vous vend</h2>
+            <p className="section-intro">
+              Des identités visuelles. Un logo, une charte graphique en PDF, trois posts Instagram.
+              Des stratégies éditoriales copiées-collées. Du storytelling générique.
+            </p>
+            <p className="section-intro">
+              Résultat : vous ressemblez à tout le monde. Votre marque n&apos;a pas de colonne vertébrale.
+            </p>
+          </div>
+
+          <div className="services-section">
+            <h2>Pourquoi ça ne marche pas</h2>
+            <p className="section-intro">
+              Parce qu&apos;une identité visuelle sans stratégie, c&apos;est de la décoration.
+            </p>
+            <p className="section-intro">
+              Parce que les tendances changent tous les 6 mois. Si vous les suivez, vous êtes déjà en retard.
+              Et dans 2 ans, votre marque sera datée.
+            </p>
+            <p className="section-intro">
+              Ce qui est générique ne dure pas. Ce qui suit les modes non plus.
+            </p>
+          </div>
+
+          <div className="services-section highlight">
+            <h2>Ce que Venio construit</h2>
+            <p className="section-intro">
+              Des identités cohérentes. Qui ont une colonne vertébrale.
+            </p>
             <ul className="services-list">
-              <li>Identités visuelles cohérentes</li>
-              <li>Stratégies éditoriales structurées</li>
-              <li>Contenus premium et storytelling</li>
-              <li>Direction artistique</li>
+              <li>
+                <strong>Identités visuelles structurées</strong>
+                <br />
+                Pas juste un logo. Un système visuel complet qui tient dans le temps.
+                Typographie, couleurs, grille, principes de composition.
+              </li>
+              <li>
+                <strong>Stratégies éditoriales pensées</strong>
+                <br />
+                Ligne éditoriale claire. Calendrier de contenu structuré. Processus de production.
+                Quoi dire, comment le dire, quand le dire.
+              </li>
+              <li>
+                <strong>Contenus qui positionnent</strong>
+                <br />
+                Articles de fond, études de cas, manifestes de marque.
+                Pas du remplissage SEO. Du contenu qui affirme qui vous êtes.
+              </li>
+              <li>
+                <strong>Direction artistique</strong>
+                <br />
+                Supervision créative de tous vos supports. Print, digital, vidéo.
+                Cohérence visuelle sur tous les points de contact.
+              </li>
             </ul>
           </div>
 
           <div className="services-section">
-            <h2>Notre approche</h2>
-            <div className="approach-steps">
-              <div className="approach-step">
-                <span className="step-number">1</span>
-                <div>
-                  <h3>Analyse</h3>
-                  <p>Déconstruction de votre existant</p>
-                </div>
-              </div>
-              <div className="approach-step">
-                <span className="step-number">2</span>
-                <div>
-                  <h3>Stratégie</h3>
-                  <p>Architecture de marque solide</p>
-                </div>
-              </div>
-              <div className="approach-step">
-                <span className="step-number">3</span>
-                <div>
-                  <h3>Création</h3>
-                  <p>Exécution impeccable</p>
-                </div>
-              </div>
-            </div>
+            <h2>Ce que ça produit</h2>
+            <p className="section-intro">
+              Une marque qui se tient. Qui ne suit pas les tendances. Qui dure.
+            </p>
+            <p className="section-intro">
+              Une voix qui vous appartient. Une identité qui ne ressemble à personne d&apos;autre.
+              Une cohérence sur tous vos supports.
+            </p>
           </div>
 
           <div className="services-section">
             <h2>Pour qui</h2>
-            <ul className="services-list">
-              <li>Entreprises premium</li>
-              <li>Cabinets professionnels</li>
-              <li>Marques modernes</li>
-              <li>Entrepreneurs visionnaires</li>
-            </ul>
+            <p className="section-intro">
+              Pour ceux qui veulent une marque, pas un logo.
+            </p>
+            <p className="section-intro">
+              Pour ceux qui refusent de ressembler à tout le monde.
+              Pour ceux qui comprennent que la cohérence est plus importante que les tendances.
+            </p>
+            <p className="section-intro">
+              Si vous cherchez du rapide et du tendance, ce n&apos;est pas ici.
+            </p>
           </div>
 
           <div className="services-cta">
@@ -77,7 +116,7 @@ const ServicesCommunication = () => {
               </div>
               <input type="email" placeholder="Email" required />
               <input type="text" placeholder="Entreprise" />
-              <textarea placeholder="Message" rows="6" required></textarea>
+              <textarea placeholder="Décrivez votre projet" rows="6" required></textarea>
               <button type="submit" className="form-submit">Envoyer</button>
             </form>
           </div>

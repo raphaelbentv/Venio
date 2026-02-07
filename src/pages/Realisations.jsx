@@ -146,7 +146,7 @@ const Realisations = () => {
     <>
       <SEO 
         title="Réalisations"
-        description="Découvrez nos réalisations : sites web premium, plateformes métier, SaaS et projets de communication. Cabinet d'avocats, écoles, studios créatifs et entreprises premium."
+        description="Des résultats. Pas des vitrines. Études de cas représentatives du type de travail que Venio réalise. Pas de captures retouchées, pas de métriques inventées. Si vous voulez voir du réel, contactez-nous."
         keywords="réalisations Venio, portfolio, projets, sites web, développement, communication, études de cas"
       />
       <StructuredData type="realisations" />
@@ -154,7 +154,18 @@ const Realisations = () => {
       <div className="realisations-page">
         <section className="realisations-hero">
           <h1>RÉALISATIONS</h1>
-          <p className="realisations-subtitle">Projets qui comptent, résultats mesurables</p>
+          <p className="realisations-subtitle">
+            Des résultats. Pas des vitrines.
+          </p>
+          <div className="realisations-intro">
+            <p>
+              Les projets présentés ici sont des études de cas représentatives du type de travail que Venio réalise.
+              Pas de captures d&apos;écran retouchées. Pas de métriques inventées.
+            </p>
+            <p>
+              Si vous voulez voir des projets réels en production, contactez-nous. On vous montrera ce qui existe vraiment.
+            </p>
+          </div>
         </section>
 
         <section className="realisations-content">

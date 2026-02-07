@@ -9,12 +9,17 @@ const Hero = () => {
       <div className="hero-content">
         <h1 className="hero-title">VENIO</h1>
         <p className="hero-tagline">
-          Stratégie. Développement. Communication.
+          La plupart des stratégies échouent.<br />
+          Ce n&apos;est pas un hasard.
         </p>
         <p className="hero-description">
-          Nous construisons des solutions qui marchent, vraiment.
+          Elles sont dictées par l&apos;ego, la peur ou le mimétisme.<br />
+          Pas par la lucidité.
         </p>
-        <Link to="/services" className="hero-cta">Découvrir nos services</Link>
+        <p className="hero-subtext">
+          Venio construit ce qui doit exister. Pas ce qui rassure.
+        </p>
+        <Link to="/services" className="hero-cta">Voir ce que nous faisons</Link>
       </div>
     </section>
   )

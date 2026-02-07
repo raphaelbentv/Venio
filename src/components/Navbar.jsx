@@ -3,9 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import './Navbar.css'
 
 const Navbar = () => {
-  const [polesOpen, setPolesOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [mobilePolesOpen, setMobilePolesOpen] = useState(false)
   const location = useLocation()
 
   const toggleMobileMenu = () => {
@@ -19,7 +17,6 @@ const Navbar = () => {
 
   const closeMobileMenu = () => {
     setMobileMenuOpen(false)
-    setMobilePolesOpen(false)
     document.body.style.overflow = 'unset'
   }
 
@@ -39,36 +36,6 @@ const Navbar = () => {
             </svg>
             <span className="nav-link-text">Services</span>
           </Link>
-          
-          <div 
-            className="nav-item dropdown"
-            onMouseEnter={() => setPolesOpen(true)}
-            onMouseLeave={() => setPolesOpen(false)}
-          >
-            <span className={`nav-link nav-link-icon ${location.pathname === '/poles' ? 'active' : ''}`} data-tooltip="Pôles">
-              <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                <polyline points="9 22 9 12 15 12 15 22" />
-              </svg>
-              <span className="nav-link-text">Pôles</span>
-            </span>
-            {polesOpen && (
-              <div className="dropdown-menu">
-                <a href="https://creatio.paris" target="_blank" rel="noopener noreferrer" className="dropdown-item dropdown-item-pole">
-                  <span className="pole-name">CREATIO</span>
-                  <span className="pole-description">Supports de cours</span>
-                </a>
-                <a href="https://decisio.paris" target="_blank" rel="noopener noreferrer" className="dropdown-item dropdown-item-pole">
-                  <span className="pole-name">DECISIO</span>
-                  <span className="pole-description">Communication juridique</span>
-                </a>
-                <a href="https://formatio.paris" target="_blank" rel="noopener noreferrer" className="dropdown-item dropdown-item-pole">
-                  <span className="pole-name">FORMATIO</span>
-                  <span className="pole-description">Formations professionnelles</span>
-                </a>
-              </div>
-            )}
-          </div>
           
           <Link 
             to="/realisations" 
@@ -110,6 +77,8 @@ const Navbar = () => {
             </svg>
             <span className="nav-link-text">Contact</span>
           </Link>
+          
+          <div className="nav-separator"></div>
           
           <Link 
             to="/espace-client" 
@@ -167,33 +136,6 @@ const Navbar = () => {
           <Link to="/services/communication" className="mobile-nav-link" onClick={closeMobileMenu}>
             Services
           </Link>
-          
-          <div className="mobile-nav-item">
-            <button 
-              className="mobile-nav-link mobile-nav-link-button"
-              onClick={() => setMobilePolesOpen(!mobilePolesOpen)}
-            >
-              Pôles
-              <span className={`mobile-dropdown-arrow ${mobilePolesOpen ? 'open' : ''}`}>▼</span>
-            </button>
-            {mobilePolesOpen && (
-              <div className="mobile-dropdown-menu">
-                <a href="https://creatio.paris" target="_blank" rel="noopener noreferrer" className="mobile-dropdown-item" onClick={closeMobileMenu}>
-                  <span className="pole-name">CREATIO</span>
-                  <span className="pole-description">Supports de cours</span>
-                </a>
-                <a href="https://decisio.paris" target="_blank" rel="noopener noreferrer" className="mobile-dropdown-item" onClick={closeMobileMenu}>
-                  <span className="pole-name">DECISIO</span>
-                  <span className="pole-description">Communication juridique</span>
-                </a>
-                <a href="https://formatio.paris" target="_blank" rel="noopener noreferrer" className="mobile-dropdown-item" onClick={closeMobileMenu}>
-                  <span className="pole-name">FORMATIO</span>
-                  <span className="pole-description">Formations professionnelles</span>
-                </a>
-              </div>
-            )}
-          </div>
-          
           <Link to="/realisations" className="mobile-nav-link" onClick={closeMobileMenu}>
             Réalisations
           </Link>

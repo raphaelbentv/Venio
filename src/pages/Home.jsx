@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import Hero from '../components/Hero'
 import Manifeste from '../components/Manifeste'
 import ServicesCore from '../components/ServicesCore'
-import Poles from '../components/Poles'
 import Citation from '../components/Citation'
 import CTAFinal from '../components/CTAFinal'
 import GradientMeshBackground from '../components/GradientMeshBackground'
@@ -17,7 +16,7 @@ const Home = () => {
     <>
       <SEO 
         title="Accueil"
-        description="Venio construit des systèmes qui durent. Architecture sur mesure, identités cohérentes et stratégies actionnables pour entreprises premium. Communication, développement et conseil stratégique."
+        description="La plupart des stratégies échouent. Ce n'est pas un hasard. Venio construit ce qui doit exister. Code propriétaire, architectures sur mesure, audit sans filtre. Pas de templates, pas de mensonges."
         keywords="agence digitale, développement web, communication, branding, stratégie digitale, Paris"
       />
       <StructuredData type="home" />
@@ -26,7 +25,6 @@ const Home = () => {
       <Hero />
       <Manifeste />
       <ServicesCore />
-      <Poles />
       <Citation />
       <CTAFinal />
     </>

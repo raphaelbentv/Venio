@@ -1,8 +1,7 @@
-import React from 'react'
+import { useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
-import PerformanceControl from './components/PerformanceControl'
 import ProtectedRoute from './components/ProtectedRoute'
 import Home from './pages/Home'
 import ServicesCommunication from './pages/ServicesCommunication'
@@ -33,10 +32,17 @@ import { ADMIN_ROLES, PERMISSIONS } from './lib/permissions'
 import './App.css'
 
 function App() {
+  useEffect(() => {
+    document.body.classList.add('gpu-off')
+    localStorage.setItem('gpu-mode', 'false')
+    return () => {
+      document.body.classList.remove('gpu-off')
+    }
+  }, [])
+
   return (
     <>
       <Navbar />
-      <PerformanceControl />
       <Routes>
         {/* Site vitrine */}
         <Route path="/" element={<Home />} />

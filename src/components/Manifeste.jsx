@@ -5,14 +5,21 @@ const Manifeste = () => {
   return (
     <section className="manifeste">
       <div className="manifeste-content">
+        <p className="manifeste-intro">
+          Venio refuse :
+        </p>
         <p className="manifeste-text">
-          Venio conçoit des marques cohérentes,<br />
-          développe des plateformes modernes,<br />
-          et construit des stratégies basées sur du concret.
+          Le jargon marketing vide.<br />
+          Les promesses creuses.<br />
+          Les tendances suivies par mimétisme.<br />
+          Les stratégies sans objectifs concrets.<br />
+          Les projets dictés par l&apos;ego ou la peur.
+        </p>
+        <p className="manifeste-principle">
+          Si ça ne sert à rien, on ne le fait pas.
         </p>
         <p className="manifeste-tagline">
-          Lucide. Efficace. Radical.<br />
-          Sans superflu. Sans bullshit.
+          Lucidité. Efficacité. Refus du mensonge.
         </p>
       </div>
     </section>

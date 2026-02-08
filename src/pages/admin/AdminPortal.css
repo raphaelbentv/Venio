@@ -156,7 +156,6 @@
   border-color: rgba(14, 165, 233, 0.7);
   transform: translateY(-4px);
   box-shadow: 0 12px 24px rgba(14, 165, 233, 0.25), 0 0 30px rgba(59, 130, 246, 0.15);
-  background: linear-gradient(135deg, rgba(40, 40, 40, 0.9) 0%, rgba(25, 25, 25, 0.95) 100%);
 }
 
 .admin-widget:hover::before {
@@ -259,7 +258,6 @@
   transform: translateY(-6px) scale(1.02);
   border-color: rgba(14, 165, 233, 0.6);
   box-shadow: 0 16px 32px rgba(14, 165, 233, 0.3), 0 0 40px rgba(59, 130, 246, 0.2);
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.15) 0%, rgba(59, 130, 246, 0.1) 100%);
 }
 
 .admin-stat-label {
@@ -325,7 +323,6 @@
 
 .admin-list-item:hover {
   border-color: rgba(14, 165, 233, 0.6);
-  background: linear-gradient(135deg, rgba(40, 40, 40, 0.9) 0%, rgba(25, 25, 25, 0.95) 100%);
   transform: translateX(8px);
   box-shadow: 0 8px 24px rgba(14, 165, 233, 0.25), 0 0 30px rgba(59, 130, 246, 0.15);
 }
@@ -1440,7 +1437,6 @@ a.portal-button {
   border-color: rgba(14, 165, 233, 0.8);
   box-shadow: 0 8px 24px rgba(14, 165, 233, 0.3), 0 0 30px rgba(59, 130, 246, 0.2);
   transform: translateY(-4px) scale(1.02);
-  background: linear-gradient(135deg, rgba(35, 35, 35, 0.95) 0%, rgba(20, 20, 20, 1) 100%);
 }
 
 .crm-card-title {

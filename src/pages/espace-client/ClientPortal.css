@@ -89,12 +89,19 @@ div:has(> input.portal-input[type="datetime-local"])::after {
 .portal-action-link {
   display: inline-flex;
   align-items: center;
-  gap: 0;
-  padding: 10px 12px;
-  overflow: hidden;
+  gap: 6px;
+  padding: 10px 14px;
+  overflow: visible;
   text-decoration: none;
   min-height: 44px;
   box-sizing: border-box;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.15) 0%, rgba(59, 130, 246, 0.1) 100%);
+  border: 1px solid rgba(14, 165, 233, 0.3);
+  border-radius: 8px;
+  color: #60a5fa;
+  transition: all 0.3s ease;
+  position: relative;
+  white-space: nowrap;
 }
 
 .portal-action-icon {
@@ -102,8 +109,9 @@ div:has(> input.portal-input[type="datetime-local"])::after {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
+  color: inherit;
 }
 
 .portal-action-icon svg {
@@ -114,12 +122,14 @@ div:has(> input.portal-input[type="datetime-local"])::after {
 }
 
 .portal-action-label {
-  opacity: 0;
-  max-width: 0;
-  overflow: hidden;
+  opacity: 1;
+  max-width: 180px;
+  overflow: visible;
   white-space: nowrap;
   transition: opacity 0.2s ease, max-width 0.25s ease;
-  margin-left: 0;
+  margin-left: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
 .portal-action-link:hover .portal-action-label,
@@ -129,12 +139,23 @@ div:has(> input.portal-input[type="datetime-local"])::after {
   margin-left: 8px;
 }
 
+.portal-action-link:hover {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.25) 0%, rgba(59, 130, 246, 0.15) 100%);
+  border-color: rgba(14, 165, 233, 0.6);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+  transform: translateY(-2px);
+}
+
 /* Même comportement en GPU OFF */
 body.gpu-off .portal-action-link:hover .portal-action-label,
 body.gpu-off .portal-actions-reveal:hover .portal-action-label {
   opacity: 1 !important;
   max-width: 180px !important;
   margin-left: 8px !important;
+  transition-duration: 0.15s !important;
+}
+
+body.gpu-off .portal-action-link {
   transition-duration: 0.15s !important;
 }
 

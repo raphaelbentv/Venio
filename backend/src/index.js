@@ -15,6 +15,7 @@ import adminProjectSectionsRoutes from './routes/admin/projectSections.js'
 import adminProjectItemsRoutes from './routes/admin/projectItems.js'
 import adminBillingRoutes from './routes/admin/billing.js'
 import adminCrmRoutes from './routes/admin/crm.js'
+import adminCloudStorageRoutes from './routes/admin/cloudStorage.js'
 import clientProjectContentRoutes from './routes/client/projectContent.js'
 import User from './models/User.js'
 
@@ -53,6 +54,7 @@ app.use('/api/admin/projects', adminProjectSectionsRoutes)
 app.use('/api/admin/projects', adminProjectItemsRoutes)
 app.use('/api/admin/billing', adminBillingRoutes)
 app.use('/api/admin/crm', adminCrmRoutes)
+app.use('/api/admin/cloud', adminCloudStorageRoutes)
 
 // Routes client pour le contenu des projets
 app.use('/api/projects', clientProjectContentRoutes)

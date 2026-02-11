@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState, useRef, useCallback } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import {
@@ -19,6 +19,14 @@ import {
   deleteAdminClientContact,
   deleteAdminClientNote,
 } from '../../services/adminClients'
+import {
+  listCloudFiles,
+  createCloudFolder,
+  uploadCloudFile,
+  getCloudDownloadUrl,
+  deleteCloudItem,
+} from '../../services/adminCloud'
+import { getToken } from '../../lib/api'
 import '../espace-client/ClientPortal.css'
 import './AdminPortal.css'
 
@@ -26,6 +34,7 @@ const TABS = [
   { id: 'overview', label: "Vue d'ensemble" },
   { id: 'projects', label: 'Projets' },
   { id: 'deliverables', label: 'Livrables' },
+  { id: 'cloud', label: 'Documents Cloud' },
   { id: 'contacts', label: 'Contacts' },
   { id: 'notes', label: 'Notes & Activités' },
   { id: 'billing', label: 'Facturation' },
@@ -54,6 +63,20 @@ const ClientAccountDetail = () => {
 
   const [contactDraft, setContactDraft] = useState({ firstName: '', lastName: '', email: '', phone: '' })
   const [noteDraft, setNoteDraft] = useState('')
+
+  // Cloud tab state
+  const [cloudItems, setCloudItems] = useState([])
+  const [cloudPath, setCloudPath] = useState('')
+  const [cloudLoading, setCloudLoading] = useState(false)
+  const [cloudError, setCloudError] = useState('')
+  const [cloudSuccess, setCloudSuccess] = useState('')
+  const [showCloudNewFolder, setShowCloudNewFolder] = useState(false)
+  const [cloudNewFolderName, setCloudNewFolderName] = useState('')
+  const [cloudCreating, setCloudCreating] = useState(false)
+  const [cloudUploading, setCloudUploading] = useState(false)
+  const [cloudConfirmDelete, setCloudConfirmDelete] = useState(null)
+  const [cloudDeleting, setCloudDeleting] = useState(false)
+  const cloudFileInputRef = useRef(null)
 
   const canArchive = user?.role === 'SUPER_ADMIN'
 
@@ -218,6 +241,149 @@ const ClientAccountDetail = () => {
       setSaving(false)
     }
   }
+
+  // Cloud helpers
+  const clientCloudRoot = client ? (client.companyName || client.name || '').replace(/[\/\\:*?"<>|]/g, '_').trim() : ''
+
+  const loadCloudFiles = useCallback(async (subPath) => {
+    if (!clientCloudRoot) return
+    setCloudLoading(true)
+    setCloudError('')
+    try {
+      const fullPath = subPath ? `${clientCloudRoot}/${subPath}` : clientCloudRoot
+      const data = await listCloudFiles(fullPath)
+      setCloudItems(data.items || [])
+    } catch (err) {
+      if (err.message && err.message.includes('404')) {
+        setCloudItems([])
+      } else {
+        setCloudError(err.message || 'Erreur chargement cloud')
+        setCloudItems([])
+      }
+    } finally {
+      setCloudLoading(false)
+    }
+  }, [clientCloudRoot])
+
+  useEffect(() => {
+    if (activeTab === 'cloud' && clientCloudRoot) {
+      loadCloudFiles(cloudPath)
+    }
+  }, [activeTab, cloudPath, clientCloudRoot, loadCloudFiles])
+
+  useEffect(() => {
+    if (cloudSuccess) {
+      const timer = setTimeout(() => setCloudSuccess(''), 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [cloudSuccess])
+
+  const handleCloudCreateFolder = async (e) => {
+    e.preventDefault()
+    if (!cloudNewFolderName.trim()) return
+    setCloudCreating(true)
+    setCloudError('')
+    try {
+      const folderPath = cloudPath
+        ? `${clientCloudRoot}/${cloudPath}/${cloudNewFolderName.trim()}`
+        : `${clientCloudRoot}/${cloudNewFolderName.trim()}`
+      await createCloudFolder(folderPath)
+      setCloudNewFolderName('')
+      setShowCloudNewFolder(false)
+      setCloudSuccess('Dossier créé')
+      await loadCloudFiles(cloudPath)
+    } catch (err) {
+      setCloudError(err.message || 'Erreur création dossier')
+    } finally {
+      setCloudCreating(false)
+    }
+  }
+
+  const handleCloudEnsureFolder = async () => {
+    setCloudCreating(true)
+    setCloudError('')
+    try {
+      await createCloudFolder(clientCloudRoot)
+      setCloudSuccess('Dossier client créé')
+      await loadCloudFiles(cloudPath)
+    } catch (err) {
+      if (err.message && err.message.includes('existe')) {
+        await loadCloudFiles(cloudPath)
+      } else {
+        setCloudError(err.message || 'Erreur création dossier client')
+      }
+    } finally {
+      setCloudCreating(false)
+    }
+  }
+
+  const handleCloudUpload = async (e) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+    setCloudUploading(true)
+    setCloudError('')
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        const filePath = cloudPath
+          ? `${clientCloudRoot}/${cloudPath}/${file.name}`
+          : `${clientCloudRoot}/${file.name}`
+        await uploadCloudFile(filePath, file)
+      }
+      setCloudSuccess(`${files.length} fichier(s) uploadé(s)`)
+      await loadCloudFiles(cloudPath)
+    } catch (err) {
+      setCloudError(err.message || 'Erreur upload')
+    } finally {
+      setCloudUploading(false)
+      if (cloudFileInputRef.current) cloudFileInputRef.current.value = ''
+    }
+  }
+
+  const handleCloudDownload = async (item) => {
+    const itemPath = cloudPath
+      ? `${clientCloudRoot}/${cloudPath}/${item.name}`
+      : `${clientCloudRoot}/${item.name}`
+    const url = getCloudDownloadUrl(itemPath)
+    try {
+      const response = await fetch(url, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      })
+      if (!response.ok) throw new Error('Erreur téléchargement')
+      const blob = await response.blob()
+      const blobUrl = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = blobUrl
+      a.download = item.name
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      window.URL.revokeObjectURL(blobUrl)
+    } catch (err) {
+      setCloudError(err.message || 'Erreur téléchargement')
+    }
+  }
+
+  const handleCloudDelete = async () => {
+    if (!cloudConfirmDelete) return
+    setCloudDeleting(true)
+    setCloudError('')
+    try {
+      const itemPath = cloudPath
+        ? `${clientCloudRoot}/${cloudPath}/${cloudConfirmDelete.name}`
+        : `${clientCloudRoot}/${cloudConfirmDelete.name}`
+      await deleteCloudItem(itemPath)
+      setCloudConfirmDelete(null)
+      setCloudSuccess(`"${cloudConfirmDelete.name}" supprimé`)
+      await loadCloudFiles(cloudPath)
+    } catch (err) {
+      setCloudError(err.message || 'Erreur suppression')
+    } finally {
+      setCloudDeleting(false)
+    }
+  }
+
+  const cloudBreadcrumbs = cloudPath ? cloudPath.split('/').filter(Boolean) : []
 
   return (
     <div className="portal-container">
@@ -389,6 +555,155 @@ const ClientAccountDetail = () => {
                       </div>
                     </div>
                   ))
+                )}
+              </div>
+            )}
+
+            {activeTab === 'cloud' && (
+              <div className="portal-list">
+                {cloudError && <div className="admin-error">{cloudError}</div>}
+                {cloudSuccess && <div className="admin-success">{cloudSuccess}</div>}
+
+                {/* Cloud toolbar */}
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
+                  {cloudPath && (
+                    <button type="button" className="portal-button secondary" onClick={() => {
+                      const parts = cloudPath.split('/').filter(Boolean)
+                      parts.pop()
+                      setCloudPath(parts.join('/'))
+                    }} style={{ fontSize: 13 }}>
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 4, verticalAlign: 'middle' }}>
+                        <polyline points="15 18 9 12 15 6" />
+                      </svg>
+                      Retour
+                    </button>
+                  )}
+                  <button type="button" className="portal-button secondary" onClick={() => setShowCloudNewFolder(!showCloudNewFolder)} style={{ fontSize: 13 }}>
+                    + Dossier
+                  </button>
+                  <button type="button" className="portal-button" onClick={() => cloudFileInputRef.current?.click()} disabled={cloudUploading} style={{ fontSize: 13 }}>
+                    {cloudUploading ? 'Upload...' : 'Uploader'}
+                  </button>
+                  <input ref={cloudFileInputRef} type="file" multiple style={{ display: 'none' }} onChange={handleCloudUpload} />
+                  <Link className="portal-button secondary" to={`/admin/cloud-storage?path=${encodeURIComponent(clientCloudRoot)}`} style={{ fontSize: 13, textDecoration: 'none' }}>
+                    Ouvrir dans Cloud Storage
+                  </Link>
+                </div>
+
+                {/* Breadcrumb */}
+                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 12 }}>
+                  <a href="#" onClick={(e) => { e.preventDefault(); setCloudPath('') }} style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none' }}>
+                    {clientCloudRoot}
+                  </a>
+                  {cloudBreadcrumbs.map((part, i) => (
+                    <React.Fragment key={i}>
+                      <span> / </span>
+                      {i === cloudBreadcrumbs.length - 1 ? (
+                        <span style={{ color: '#fff' }}>{part}</span>
+                      ) : (
+                        <a href="#" onClick={(e) => { e.preventDefault(); setCloudPath(cloudBreadcrumbs.slice(0, i + 1).join('/')) }} style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none' }}>
+                          {part}
+                        </a>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </div>
+
+                {/* New folder form */}
+                {showCloudNewFolder && (
+                  <form onSubmit={handleCloudCreateFolder} style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+                    <input className="portal-input" placeholder="Nom du dossier" value={cloudNewFolderName} onChange={(e) => setCloudNewFolderName(e.target.value)} autoFocus style={{ flex: 1 }} />
+                    <button type="submit" className="portal-button" disabled={cloudCreating || !cloudNewFolderName.trim()} style={{ fontSize: 13 }}>
+                      {cloudCreating ? 'Création...' : 'Créer'}
+                    </button>
+                    <button type="button" className="portal-button secondary" onClick={() => { setShowCloudNewFolder(false); setCloudNewFolderName('') }} style={{ fontSize: 13 }}>
+                      Annuler
+                    </button>
+                  </form>
+                )}
+
+                {/* Delete confirmation */}
+                {cloudConfirmDelete && (
+                  <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, padding: 12, marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ color: '#fca5a5', fontSize: 13 }}>Supprimer "{cloudConfirmDelete.name}" ?</span>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button type="button" className="portal-button" style={{ background: 'rgba(239,68,68,0.3)', borderColor: 'rgba(239,68,68,0.5)', fontSize: 13 }} onClick={handleCloudDelete} disabled={cloudDeleting}>
+                        {cloudDeleting ? 'Suppression...' : 'Supprimer'}
+                      </button>
+                      <button type="button" className="portal-button secondary" onClick={() => setCloudConfirmDelete(null)} style={{ fontSize: 13 }}>Annuler</button>
+                    </div>
+                  </div>
+                )}
+
+                {/* File listing */}
+                {cloudLoading ? (
+                  <div className="admin-loading">Chargement...</div>
+                ) : cloudItems.length === 0 ? (
+                  <div className="admin-empty-state">
+                    <div className="admin-empty-state-icon">
+                      <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.4 }}>
+                        <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
+                      </svg>
+                    </div>
+                    <p className="admin-empty-state-text">Aucun document cloud pour ce client</p>
+                    <button type="button" className="portal-button" onClick={handleCloudEnsureFolder} disabled={cloudCreating} style={{ marginTop: 12 }}>
+                      {cloudCreating ? 'Création...' : 'Créer le dossier client'}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="cloud-file-list">
+                    <div className="cloud-file-row cloud-file-header">
+                      <div className="cloud-file-icon"></div>
+                      <div className="cloud-file-name">Nom</div>
+                      <div className="cloud-file-size">Taille</div>
+                      <div className="cloud-file-date">Modifié</div>
+                      <div className="cloud-file-actions">Actions</div>
+                    </div>
+                    {cloudItems.map((item) => (
+                      <div
+                        key={item.href || item.name}
+                        className={`cloud-file-row ${item.isDirectory ? 'cloud-file-directory' : ''}`}
+                        onDoubleClick={() => {
+                          if (item.isDirectory) {
+                            setCloudPath(cloudPath ? `${cloudPath}/${item.name}` : item.name)
+                          }
+                        }}
+                      >
+                        <div className="cloud-file-icon" style={{ color: item.isDirectory ? '#0ea5e9' : 'rgba(255,255,255,0.5)' }}>
+                          {item.isDirectory ? (
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /></svg>
+                          ) : (
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" /><polyline points="13 2 13 9 20 9" /></svg>
+                          )}
+                        </div>
+                        <div className="cloud-file-name">
+                          {item.isDirectory ? (
+                            <a href="#" onClick={(e) => { e.preventDefault(); setCloudPath(cloudPath ? `${cloudPath}/${item.name}` : item.name) }} className="cloud-file-link">
+                              {item.name}
+                            </a>
+                          ) : (
+                            <span className="cloud-file-label">{item.name}</span>
+                          )}
+                        </div>
+                        <div className="cloud-file-size">{item.isDirectory ? '—' : (item.size ? `${(item.size / 1024).toFixed(1)} Ko` : '—')}</div>
+                        <div className="cloud-file-date">{item.lastModified ? new Date(item.lastModified).toLocaleDateString('fr-FR') : '—'}</div>
+                        <div className="cloud-file-actions">
+                          {!item.isDirectory && (
+                            <button type="button" className="cloud-action-btn" onClick={() => handleCloudDownload(item)} title="Télécharger">
+                              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+                              </svg>
+                            </button>
+                          )}
+                          <button type="button" className="cloud-action-btn cloud-action-btn-danger" onClick={() => setCloudConfirmDelete(item)} title="Supprimer">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
             )}

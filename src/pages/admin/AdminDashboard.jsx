@@ -121,6 +121,14 @@ const AdminDashboard = () => {
                 <span className="portal-action-label">CRM & Prospection</span>
               </Link>
             )}
+            {canManageClients && (
+              <Link className="portal-button portal-action-link" to="/admin/cloud-storage" title="Cloud Storage">
+                <span className="portal-action-icon" aria-hidden>
+                  <svg viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" stroke="currentColor"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" /></svg>
+                </span>
+                <span className="portal-action-label">Cloud Storage</span>
+              </Link>
+            )}
             <button className="portal-button secondary portal-action-link" onClick={logout} type="button" title="Se déconnecter">
               <span className="portal-action-icon" aria-hidden>
                 <svg viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>

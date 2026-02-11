@@ -27,6 +27,7 @@ import AdminEdit from './pages/admin/AdminEdit'
 import ProjectForm from './pages/admin/ProjectForm'
 import AdminProjectDetail from './pages/admin/ProjectDetail'
 import CrmBoard from './pages/admin/CrmBoard'
+import CloudStorage from './pages/admin/CloudStorage'
 import RequirePermission from './components/RequirePermission'
 import { ADMIN_ROLES, PERMISSIONS } from './lib/permissions'
 import './App.css'
@@ -171,6 +172,16 @@ function App() {
             <ProtectedRoute role={ADMIN_ROLES} redirectTo="/admin/login">
               <RequirePermission permission={PERMISSIONS.VIEW_CRM} redirectTo="/admin">
                 <CrmBoard />
+              </RequirePermission>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/cloud-storage"
+          element={
+            <ProtectedRoute role={ADMIN_ROLES} redirectTo="/admin/login">
+              <RequirePermission permission={PERMISSIONS.MANAGE_CLIENTS} redirectTo="/admin">
+                <CloudStorage />
               </RequirePermission>
             </ProtectedRoute>
           }

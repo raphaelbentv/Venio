@@ -1568,3 +1568,130 @@ a.portal-button {
     width: 85%;
   }
 }
+
+/* Cloud Storage File Browser */
+.cloud-file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cloud-file-row {
+  display: grid;
+  grid-template-columns: 36px 1fr 100px 160px 120px;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  cursor: default;
+}
+
+.cloud-file-row.cloud-file-header {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 700;
+  border-bottom: 1px solid rgba(14, 165, 233, 0.15);
+  padding-bottom: 12px;
+  margin-bottom: 4px;
+}
+
+.cloud-file-row:not(.cloud-file-header):hover {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.08) 0%, rgba(59, 130, 246, 0.04) 100%);
+}
+
+.cloud-file-row.cloud-file-directory {
+  cursor: pointer;
+}
+
+.cloud-file-row.cloud-file-directory:hover {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.12) 0%, rgba(59, 130, 246, 0.06) 100%);
+}
+
+.cloud-file-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cloud-file-name {
+  font-size: 14px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cloud-file-link {
+  color: #c7d2fe;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.cloud-file-link:hover {
+  color: #0ea5e9;
+}
+
+.cloud-file-label {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.cloud-file-size,
+.cloud-file-date {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.cloud-file-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.cloud-action-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.cloud-action-btn:hover {
+  background: rgba(14, 165, 233, 0.2);
+  border-color: rgba(14, 165, 233, 0.4);
+  color: #0ea5e9;
+}
+
+.cloud-action-btn-danger:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #f87171;
+}
+
+@media (max-width: 768px) {
+  .cloud-file-row {
+    grid-template-columns: 32px 1fr 80px;
+    gap: 8px;
+    padding: 8px 10px;
+  }
+
+  .cloud-file-date,
+  .cloud-file-row.cloud-file-header .cloud-file-date {
+    display: none;
+  }
+
+  .cloud-file-actions {
+    display: none;
+  }
+
+  .cloud-file-row.cloud-file-header .cloud-file-actions {
+    display: none;
+  }
+}

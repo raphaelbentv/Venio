@@ -43,11 +43,6 @@ jobs:
       - name: ✅ Vérifier le build
         run: npm run deploy:check
 
-      - name: 📥 Re-checkout avant déploiement (sécurité)
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
       - name: 🔎 Vérifier le contexte git
         run: |
           if [ ! -d .git ]; then

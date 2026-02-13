@@ -50,8 +50,36 @@ jobs:
             exit 1
           fi
           git rev-parse --is-inside-work-tree
-          git fetch --prune --unshallow || true
+          if [ -f .git/shallow ]; then
+            git fetch --prune --unshallow
+          else
+            git fetch --prune
+          fi
           git log --oneline -n 1
+
+      - name: 🔐 Vérifier les secrets et le dossier de build
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_SERVER_DIR: ${{ secrets.FTP_SERVER_DIR }}
+        run: |
+          missing=0
+          for key in FTP_SERVER FTP_USERNAME FTP_PASSWORD FTP_SERVER_DIR; do
+            if [ -z "${!key}" ]; then
+              echo "::error::Secret manquant ou vide: $key"
+              missing=1
+            fi
+          done
+
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+
+          if [ ! -d "${{ github.workspace }}/dist" ]; then
+            echo "::error::Dossier de build introuvable: ${{ github.workspace }}/dist"
+            exit 1
+          fi
 
       - name: 🚀 Déployer sur Ionos via SFTP
         uses: milanmk/actions-file-deployer@master
@@ -62,7 +90,7 @@ jobs:
           remote-password: ${{ secrets.FTP_PASSWORD }}
           remote-port: 22
           remote-path: ${{ secrets.FTP_SERVER_DIR }}
-          local-path: './dist'
+          local-path: ${{ github.workspace }}/dist
           sync: 'full'
 
       - name: ✅ Déploiement terminé

@@ -17,6 +17,7 @@ import adminBillingRoutes from './routes/admin/billing.js'
 import adminCrmRoutes from './routes/admin/crm.js'
 import clientProjectContentRoutes from './routes/client/projectContent.js'
 import User from './models/User.js'
+import { startScheduler } from './lib/crmScheduler.js'
 
 dotenv.config()
 
@@ -79,6 +80,8 @@ mongoose
   .then(() => {
     app.listen(port, () => {
       console.log(`API running on http://localhost:${port}`)
+      // Start CRM automation scheduler
+      startScheduler()
     })
   })
   .catch((err) => {

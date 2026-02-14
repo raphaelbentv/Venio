@@ -12,6 +12,7 @@ import BillingDocument from '../../models/BillingDocument.js'
 import ClientContact from '../../models/ClientContact.js'
 import ClientNote from '../../models/ClientNote.js'
 import ClientActivity from '../../models/ClientActivity.js'
+import { createClientFolders, getClientCloudInfo } from '../../lib/nextcloud.js'
 
 const router = express.Router()
 
@@ -46,6 +47,7 @@ function normalizeClientPayload(body = {}) {
 
   pickString('name')
   pickString('companyName')
+  pickString('serviceType')
   pickString('phone')
   pickString('website')
 
@@ -236,6 +238,11 @@ router.post('/', requirePermission(PERMISSIONS.MANAGE_CLIENTS), async (req, res,
       payload: { email: normalizedEmail },
     })
 
+    // Create Nextcloud folders for the client (fire-and-forget)
+    createClientFolders(client.companyName || client.name, client._id.toString()).catch((err) => {
+      console.error('[Nextcloud] Error creating client folders:', err.message || err)
+    })
+
     const fullClient = await User.findById(client._id).select('-passwordHash').populate('ownerAdminId', 'name email role').lean()
     return ok(res, { client: fullClient }, null, 201)
   } catch (err) {
@@ -252,6 +259,21 @@ router.get('/:id', requirePermission(PERMISSIONS.MANAGE_CLIENTS), async (req, re
 
     const fullClient = await User.findById(client._id).select('-passwordHash').populate('ownerAdminId', 'name email role').lean()
     return ok(res, { client: fullClient })
+  } catch (err) {
+    return next(err)
+  }
+})
+
+// Get Nextcloud cloud folder info for a client
+router.get('/:id/cloud', requirePermission(PERMISSIONS.MANAGE_CLIENTS), async (req, res, next) => {
+  try {
+    const client = await ensureClient(req.params.id)
+    if (!client) {
+      return error(res, 404, 'Client not found', 'CLIENT_NOT_FOUND')
+    }
+
+    const cloudInfo = getClientCloudInfo(client.companyName || client.name, client._id.toString())
+    return ok(res, { cloud: cloudInfo })
   } catch (err) {
     return next(err)
   }

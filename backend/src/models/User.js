@@ -18,6 +18,7 @@ const userSchema = new mongoose.Schema(
     role: { type: String, enum: ['CLIENT', 'SUPER_ADMIN', 'ADMIN', 'VIEWER'], required: true },
     name: { type: String, required: true },
     companyName: { type: String, default: '' },
+    serviceType: { type: String, default: '' }, // Service pour lequel le client paie (ex. Communication, Développement web)
     phone: { type: String, default: '' },
     website: { type: String, default: '' },
     address: { type: userAddressSchema, default: () => ({}) },

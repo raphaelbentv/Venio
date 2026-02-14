@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { apiFetch } from '../../lib/api'
 import { useAuth } from '../../context/AuthContext'
 import { hasPermission, PERMISSIONS } from '../../lib/permissions'
-import { toDateTimeLocal } from '../../lib/formatUtils'
+import { CRM_SERVICE_TYPES, fromDateTimeLocal, toDateTimeLocal } from '../../lib/formatUtils'
 import '../espace-client/ClientPortal.css'
 import './AdminPortal.css'
 
@@ -26,8 +26,45 @@ const CRM_PRIORITIES = [
 
 const CRM_SOURCES = ['Ads', 'Site', 'Referral', 'Réseaux sociaux', 'Email', 'Autre']
 
+const CRM_TEMPERATURES = [
+  { key: 'FROID', label: 'Froid ❄️', color: '#64748b' },
+  { key: 'TIEDE', label: 'Tiède 🌤️', color: '#f59e0b' },
+  { key: 'CHAUD', label: 'Chaud 🔥', color: '#f97316' },
+  { key: 'TRES_CHAUD', label: 'Très chaud 🔥🔥', color: '#ef4444' },
+]
+
 const STATUS_MAP = Object.fromEntries(CRM_STATUSES.map((s) => [s.key, s]))
 const PRIORITY_MAP = Object.fromEntries(CRM_PRIORITIES.map((p) => [p.key, p]))
+const TEMPERATURE_MAP = Object.fromEntries(CRM_TEMPERATURES.map((t) => [t.key, t]))
+
+// Helper to calculate lead alerts
+const getLeadAlerts = (lead) => {
+  const alerts = []
+  const now = new Date()
+
+  // Lead froid (7+ jours sans contact)
+  if (lead.lastContactAt && !['WON', 'LOST'].includes(lead.status)) {
+    const daysSince = Math.floor((now - new Date(lead.lastContactAt)) / (1000 * 60 * 60 * 24))
+    if (daysSince >= 7) {
+      alerts.push({ type: 'cold', label: `Froid (${daysSince}j)`, color: '#64748b' })
+    }
+  }
+
+  // Action en retard
+  if (lead.nextActionAt && new Date(lead.nextActionAt) < now && !['WON', 'LOST'].includes(lead.status)) {
+    alerts.push({ type: 'overdue', label: 'En retard', color: '#ef4444' })
+  }
+
+  // Statut bloqué (14+ jours)
+  if (lead.statusChangedAt && !['WON', 'LOST'].includes(lead.status)) {
+    const daysSince = Math.floor((now - new Date(lead.statusChangedAt)) / (1000 * 60 * 60 * 24))
+    if (daysSince >= 14) {
+      alerts.push({ type: 'stale', label: `Bloqué (${daysSince}j)`, color: '#f59e0b' })
+    }
+  }
+
+  return alerts
+}
 
 const CrmBoard = () => {
   const { user } = useAuth()
@@ -60,8 +97,13 @@ const CrmBoard = () => {
     status: 'LEAD',
     nextActionAt: '',
     notes: '',
+    serviceType: '',
+    leadTemperature: 'TIEDE',
+    interactionNotes: '',
     assignedTo: '',
   })
+
+  const [expandedLead, setExpandedLead] = useState(null)
 
   const adminsById = useMemo(() => {
     const map = {}
@@ -168,6 +210,9 @@ const CrmBoard = () => {
         status: form.status,
         nextActionAt: form.nextActionAt ? new Date(form.nextActionAt).toISOString() : null,
         notes: form.notes,
+        serviceType: form.serviceType,
+        leadTemperature: form.leadTemperature,
+        interactionNotes: form.interactionNotes,
         assignedTo: form.assignedTo || null,
       }
       await apiFetch('/api/admin/crm/leads', {
@@ -185,6 +230,9 @@ const CrmBoard = () => {
         status: 'LEAD',
         nextActionAt: '',
         notes: '',
+        serviceType: '',
+        leadTemperature: 'TIEDE',
+        interactionNotes: '',
         assignedTo: '',
       })
       setShowForm(false)
@@ -215,6 +263,25 @@ const CrmBoard = () => {
       await load()
     } catch (err) {
       setError(err.message || 'Erreur suppression lead')
+    }
+  }
+
+  const [converting, setConverting] = useState(null)
+
+  const handleConvertToClient = async (lead) => {
+    if (!window.confirm(`Convertir "${lead.company}" en client ?`)) return
+    setError('')
+    setConverting(lead._id)
+    try {
+      const res = await apiFetch(`/api/admin/crm/leads/${lead._id}/convert-to-client`, { method: 'POST' })
+      if (res.client) {
+        alert(`Client créé avec succès : ${res.client.name}`)
+        await load()
+      }
+    } catch (err) {
+      setError(err.message || 'Erreur conversion en client')
+    } finally {
+      setConverting(null)
     }
   }
 
@@ -272,15 +339,27 @@ const CrmBoard = () => {
         {(column.leads || []).map((lead) => {
           const isOverdue = lead.nextActionAt && new Date(lead.nextActionAt) < new Date()
           const assigned = adminsById[lead.assignedTo]
+          const alerts = getLeadAlerts(lead)
+          const isCold = alerts.some((a) => a.type === 'cold')
+          const isStale = alerts.some((a) => a.type === 'stale')
           return (
             <div
               key={lead._id}
-              className={`crm-card ${isOverdue ? 'crm-overdue' : ''}`}
+              className={`crm-card ${isOverdue ? 'crm-overdue' : ''} ${isCold ? 'crm-card-cold' : ''} ${isStale ? 'crm-card-stale' : ''}`}
               draggable
               onDragStart={(e) => handleDragStart(e, lead._id)}
             >
               <p className="crm-card-title">{lead.company}</p>
               <p className="crm-card-meta">{lead.contactName || 'Contact non renseigné'}</p>
+              {alerts.length > 0 && (
+                <div className="crm-card-alerts">
+                  {alerts.map((alert) => (
+                    <span key={alert.type} className="crm-alert-badge" style={{ '--alert-color': alert.color }}>
+                      {alert.label}
+                    </span>
+                  ))}
+                </div>
+              )}
               <div className="crm-card-row">
                 {lead.priority && <span className="crm-badge">{lead.priority}</span>}
                 {lead.source && <span className="crm-badge">{lead.source}</span>}
@@ -311,6 +390,15 @@ const CrmBoard = () => {
                 <p className="crm-card-meta" style={{ marginTop: 8 }}>
                   Prochaine action : {new Date(lead.nextActionAt).toLocaleDateString()}
                 </p>
+              )}
+              {lead.status === 'WON' && !lead.clientAccountId && canManageCrm && (
+                <button
+                  className="crm-btn-convert crm-btn-convert-card"
+                  onClick={() => handleConvertToClient(lead)}
+                  disabled={converting === lead._id}
+                >
+                  {converting === lead._id ? 'Conversion...' : 'Créer client'}
+                </button>
               )}
             </div>
           )
@@ -408,6 +496,10 @@ const CrmBoard = () => {
               <th className="crm-th crm-th-budget" onClick={() => toggleSort('budget')}>
                 Budget <SortIcon field="budget" />
               </th>
+              <th className="crm-th crm-th-service">Service</th>
+              <th className="crm-th crm-th-temperature" onClick={() => toggleSort('leadTemperature')}>
+                Chaleur <SortIcon field="leadTemperature" />
+              </th>
               <th className="crm-th crm-th-assignee">Commercial</th>
               <th className="crm-th crm-th-date" onClick={() => toggleSort('nextActionAt')}>
                 Prochaine action <SortIcon field="nextActionAt" />
@@ -425,7 +517,7 @@ const CrmBoard = () => {
                 <React.Fragment key={group.key}>
                   {/* Group header row */}
                   <tr className="crm-group-row" onClick={() => toggleGroup(group.key)}>
-                    <td colSpan={canManageCrm ? 11 : 10}>
+                    <td colSpan={canManageCrm ? 13 : 12}>
                       <div className="crm-group-header" style={{ '--group-color': group.color }}>
                         <span className={`crm-group-chevron ${isCollapsed ? '' : 'open'}`}>▶</span>
                         <span className="crm-group-color-bar" style={{ background: group.color }} />
@@ -440,11 +532,26 @@ const CrmBoard = () => {
                       const isOverdue = lead.nextActionAt && new Date(lead.nextActionAt) < new Date()
                       const assigned = adminsById[lead.assignedTo]
                       const priorityInfo = PRIORITY_MAP[lead.priority]
+                      const alerts = getLeadAlerts(lead)
+                      const isCold = alerts.some((a) => a.type === 'cold')
+                      const isStale = alerts.some((a) => a.type === 'stale')
                       return (
-                        <tr key={lead._id} className={`crm-table-row ${isOverdue ? 'crm-row-overdue' : ''}`}>
+                        <tr
+                          key={lead._id}
+                          className={`crm-table-row ${isOverdue ? 'crm-row-overdue' : ''} ${isCold ? 'crm-row-cold' : ''} ${isStale ? 'crm-row-stale' : ''}`}
+                        >
                           <td className="crm-td crm-td-company">
                             <span className="crm-row-color-indicator" style={{ background: group.color }} />
                             {lead.company}
+                            {alerts.length > 0 && (
+                              <span className="crm-alerts-inline">
+                                {alerts.map((alert) => (
+                                  <span key={alert.type} className="crm-alert-badge" style={{ '--alert-color': alert.color }}>
+                                    {alert.label}
+                                  </span>
+                                ))}
+                              </span>
+                            )}
                           </td>
                           <td className="crm-td">{lead.contactName || '—'}</td>
                           <td className="crm-td crm-td-email">
@@ -482,6 +589,29 @@ const CrmBoard = () => {
                           </td>
                           <td className="crm-td crm-td-budget">
                             {lead.budget != null ? `${lead.budget.toLocaleString('fr-FR')} €` : '—'}
+                          </td>
+                          <td className="crm-td crm-td-service">
+                            {lead.serviceType ? <span className="crm-table-badge">{lead.serviceType}</span> : '—'}
+                          </td>
+                          <td className="crm-td crm-td-temperature">
+                            {canManageCrm ? (
+                              <select
+                                className="crm-inline-select"
+                                value={lead.leadTemperature || 'TIEDE'}
+                                onChange={(e) => handleUpdateLead(lead._id, { leadTemperature: e.target.value })}
+                                style={{ '--select-color': TEMPERATURE_MAP[lead.leadTemperature]?.color || '#f59e0b' }}
+                              >
+                                {CRM_TEMPERATURES.map((t) => (
+                                  <option key={t.key} value={t.key}>
+                                    {t.label}
+                                  </option>
+                                ))}
+                              </select>
+                            ) : (
+                              <span className="crm-temperature-badge" style={{ '--temp-color': TEMPERATURE_MAP[lead.leadTemperature]?.color || '#f59e0b' }}>
+                                {TEMPERATURE_MAP[lead.leadTemperature]?.label || lead.leadTemperature}
+                              </span>
+                            )}
                           </td>
                           <td className="crm-td">
                             {canManageCrm ? (
@@ -525,6 +655,38 @@ const CrmBoard = () => {
                                     </option>
                                   ))}
                                 </select>
+                                {/* Notes button */}
+                                <button
+                                  className="crm-btn-notes"
+                                  onClick={() => setExpandedLead(lead)}
+                                  title="Voir/éditer les notes d'interactions"
+                                >
+                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                    <polyline points="14 2 14 8 20 8" />
+                                    <line x1="16" y1="13" x2="8" y2="13" />
+                                    <line x1="16" y1="17" x2="8" y2="17" />
+                                    <polyline points="10 9 9 9 8 9" />
+                                  </svg>
+                                </button>
+                                {/* Convert to client button (only for WON leads) */}
+                                {lead.status === 'WON' && !lead.clientAccountId && (
+                                  <button
+                                    className="crm-btn-convert"
+                                    onClick={() => handleConvertToClient(lead)}
+                                    disabled={converting === lead._id}
+                                    title="Convertir en client"
+                                  >
+                                    {converting === lead._id ? '...' : (
+                                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                        <circle cx="9" cy="7" r="4" />
+                                        <line x1="19" y1="8" x2="19" y2="14" />
+                                        <line x1="22" y1="11" x2="16" y2="11" />
+                                      </svg>
+                                    )}
+                                  </button>
+                                )}
                                 {/* Delete button */}
                                 {deleteConfirm === lead._id ? (
                                   <div className="crm-delete-confirm">
@@ -572,7 +734,7 @@ const CrmBoard = () => {
   )
 
   return (
-    <div className="portal-container">
+    <div className="portal-container crm-page-container">
       <div className="portal-card">
         <div className="admin-breadcrumb">
           <Link to="/admin">Admin</Link>
@@ -617,6 +779,15 @@ const CrmBoard = () => {
               <button className="portal-button" onClick={() => setShowForm((v) => !v)}>
                 {showForm ? 'Masquer le formulaire' : '+ Nouveau lead'}
               </button>
+            )}
+            {canManageCrm && (
+              <Link className="crm-settings-link" to="/admin/crm/settings" title="Paramètres des automatisations">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>
+                Automatisations
+              </Link>
             )}
             <Link className="portal-button secondary portal-action-link" to="/admin/comptes-admin" title="Comptes admin">
               <span className="portal-action-icon" aria-hidden>
@@ -713,11 +884,36 @@ const CrmBoard = () => {
                   value={form.nextActionAt ? toDateTimeLocal(form.nextActionAt) : ''}
                   onChange={(e) => setForm({ ...form, nextActionAt: e.target.value })}
                 />
+                <select className="portal-input" value={form.serviceType} onChange={(e) => setForm({ ...form, serviceType: e.target.value })}>
+                  <option value="">Type de service</option>
+                  {CRM_SERVICE_TYPES.map((service) => (
+                    <option key={service} value={service}>
+                      {service}
+                    </option>
+                  ))}
+                </select>
+                <select className="portal-input" value={form.leadTemperature} onChange={(e) => setForm({ ...form, leadTemperature: e.target.value })}>
+                  {CRM_TEMPERATURES.map((temp) => (
+                    <option key={temp.key} value={temp.key}>
+                      {temp.label}
+                    </option>
+                  ))}
+                </select>
                 <input
                   className="portal-input"
                   placeholder="Notes internes"
                   value={form.notes}
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                />
+              </div>
+              <div style={{ marginTop: 12 }}>
+                <textarea
+                  className="portal-input"
+                  placeholder="Notes détaillées des interactions (appels, emails, réunions...)"
+                  value={form.interactionNotes}
+                  onChange={(e) => setForm({ ...form, interactionNotes: e.target.value })}
+                  rows={6}
+                  style={{ width: '100%', resize: 'vertical', fontFamily: 'inherit' }}
                 />
               </div>
               <div className="crm-inline-actions" style={{ marginTop: 12 }}>
@@ -739,6 +935,9 @@ const CrmBoard = () => {
                       status: 'LEAD',
                       nextActionAt: '',
                       notes: '',
+                      serviceType: '',
+                      leadTemperature: 'TIEDE',
+                      interactionNotes: '',
                       assignedTo: '',
                     })
                   }
@@ -761,6 +960,217 @@ const CrmBoard = () => {
           renderTableView()
         )}
       </div>
+
+      {/* Modal for interaction notes */}
+      {expandedLead && (
+        <div className="crm-modal-overlay" onClick={() => setExpandedLead(null)}>
+          <div className="crm-modal crm-modal-wide" onClick={(e) => e.stopPropagation()}>
+            <div className="crm-modal-header">
+              <h2>Notes d'interactions - {expandedLead.company}</h2>
+              <button className="crm-modal-close" onClick={() => setExpandedLead(null)}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+            <div className="crm-modal-body">
+              <div className="crm-modal-info">
+                <p><strong>Contact :</strong> {expandedLead.contactName || '—'}</p>
+                <p><strong>Email :</strong> {expandedLead.contactEmail || '—'}</p>
+                <p><strong>Téléphone :</strong> {expandedLead.contactPhone || '—'}</p>
+                <p><strong>Service :</strong> {expandedLead.serviceType || '—'}</p>
+                <p><strong>Chaleur :</strong> {TEMPERATURE_MAP[expandedLead.leadTemperature]?.label || expandedLead.leadTemperature}</p>
+              </div>
+
+              {/* Actions rapides : contact */}
+              <div className="crm-modal-quick-actions">
+                <span className="crm-modal-quick-label">Contact rapide</span>
+                <div className="crm-modal-quick-btns">
+                  {expandedLead.contactEmail && (
+                    <a
+                      href={`mailto:${expandedLead.contactEmail}`}
+                      className="portal-button secondary crm-modal-quick-btn"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      ✉️ Envoyer un email
+                    </a>
+                  )}
+                  {expandedLead.contactPhone && (
+                    <a
+                      href={`tel:${expandedLead.contactPhone.replace(/\s/g, '')}`}
+                      className="portal-button secondary crm-modal-quick-btn"
+                    >
+                      📞 Appeler
+                    </a>
+                  )}
+                  <button
+                    type="button"
+                    className="portal-button secondary crm-modal-quick-btn"
+                    onClick={() => {
+                      const text = [
+                        expandedLead.contactName && `Contact: ${expandedLead.contactName}`,
+                        expandedLead.contactEmail && `Email: ${expandedLead.contactEmail}`,
+                        expandedLead.contactPhone && `Tél: ${expandedLead.contactPhone}`,
+                        expandedLead.company && `Société: ${expandedLead.company}`,
+                      ].filter(Boolean).join('\n')
+                      if (text) {
+                        navigator.clipboard.writeText(text).then(() => alert('Infos contact copiées'))
+                      }
+                    }}
+                  >
+                    📋 Copier les infos
+                  </button>
+                </div>
+              </div>
+
+              {/* Actions rapides : statut, chaleur, assignation, prochaine action */}
+              {canManageCrm && (
+                <div className="crm-modal-quick-actions crm-modal-quick-fields">
+                  <span className="crm-modal-quick-label">Modifier le lead</span>
+                  <div className="crm-modal-quick-grid">
+                    <div className="crm-modal-quick-field">
+                      <label>Statut</label>
+                      <select
+                        className="portal-input"
+                        value={expandedLead.status || 'LEAD'}
+                        onChange={(e) => {
+                          const v = e.target.value
+                          setExpandedLead((prev) => ({ ...prev, status: v }))
+                          handleUpdateLead(expandedLead._id, { status: v })
+                        }}
+                      >
+                        {CRM_STATUSES.map((s) => (
+                          <option key={s.key} value={s.key}>{s.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="crm-modal-quick-field">
+                      <label>Chaleur</label>
+                      <select
+                        className="portal-input"
+                        value={expandedLead.leadTemperature || 'TIEDE'}
+                        onChange={(e) => {
+                          const v = e.target.value
+                          setExpandedLead((prev) => ({ ...prev, leadTemperature: v }))
+                          handleUpdateLead(expandedLead._id, { leadTemperature: v })
+                        }}
+                      >
+                        {CRM_TEMPERATURES.map((t) => (
+                          <option key={t.key} value={t.key}>{t.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="crm-modal-quick-field">
+                      <label>Assigné à</label>
+                      <select
+                        className="portal-input"
+                        value={expandedLead.assignedTo || ''}
+                        onChange={(e) => {
+                          const v = e.target.value || null
+                          setExpandedLead((prev) => ({ ...prev, assignedTo: v }))
+                          handleUpdateLead(expandedLead._id, { assignedTo: v })
+                        }}
+                      >
+                        <option value="">Non assigné</option>
+                        {admins.filter((a) => ['SUPER_ADMIN', 'ADMIN'].includes(a.role)).map((admin) => (
+                          <option key={admin._id} value={admin._id}>{admin.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="crm-modal-quick-field">
+                      <label>Prochaine action</label>
+                      <input
+                        type="datetime-local"
+                        className="portal-input"
+                        value={toDateTimeLocal(expandedLead.nextActionAt) || ''}
+                        onChange={(e) => setExpandedLead((prev) => ({ ...prev, nextActionAt: e.target.value ? fromDateTimeLocal(e.target.value) : null }))}
+                        onBlur={(e) => {
+                          const raw = e.target.value
+                          const iso = raw ? fromDateTimeLocal(raw) : null
+                          handleUpdateLead(expandedLead._id, { nextActionAt: iso })
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className="crm-modal-quick-btns" style={{ marginTop: 8 }}>
+                    <button
+                      type="button"
+                      className="portal-button secondary"
+                      onClick={async () => {
+                        const now = new Date().toISOString()
+                        const isEarlyStage = expandedLead.status === 'LEAD' || expandedLead.status === 'QUALIFIED'
+                        setExpandedLead((prev) => ({ ...prev, lastContactAt: now, ...(isEarlyStage ? { status: 'CONTACTED' } : {}) }))
+                        await handleUpdateLead(expandedLead._id, { lastContactAt: now, ...(isEarlyStage ? { status: 'CONTACTED' } : {}) })
+                      }}
+                    >
+                      ✓ Marquer comme contacté aujourd'hui
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Convertir en client (si WON) */}
+              {expandedLead.status === 'WON' && (
+                <div className="crm-modal-quick-actions">
+                  {expandedLead.clientAccountId ? (
+                    <Link
+                      to={`/admin/comptes-clients/${expandedLead.clientAccountId}`}
+                      className="portal-button"
+                      style={{ background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)' }}
+                      onClick={() => setExpandedLead(null)}
+                    >
+                      👤 Voir le compte client
+                    </Link>
+                  ) : (
+                    <button
+                      type="button"
+                      className="portal-button"
+                      style={{ background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)' }}
+                      disabled={converting === expandedLead._id}
+                      onClick={async () => {
+                        await handleConvertToClient(expandedLead)
+                        setExpandedLead(null)
+                      }}
+                    >
+                      {converting === expandedLead._id ? 'Conversion...' : '✓ Convertir en client'}
+                    </button>
+                  )}
+                </div>
+              )}
+
+              <div className="crm-modal-notes">
+                <label className="crm-modal-label">Notes détaillées des interactions</label>
+                <textarea
+                  className="crm-modal-textarea"
+                  value={expandedLead.interactionNotes || ''}
+                  onChange={(e) => setExpandedLead((prev) => ({ ...prev, interactionNotes: e.target.value }))}
+                  placeholder="Notez ici tous les détails des appels, emails, réunions avec ce prospect..."
+                  rows={10}
+                  disabled={!canManageCrm}
+                />
+              </div>
+              {canManageCrm && (
+                <div className="crm-modal-actions">
+                  <button
+                    className="portal-button"
+                    onClick={async () => {
+                      await handleUpdateLead(expandedLead._id, { interactionNotes: expandedLead.interactionNotes })
+                      setExpandedLead(null)
+                    }}
+                  >
+                    Enregistrer les notes
+                  </button>
+                  <button className="portal-button secondary" onClick={() => setExpandedLead(null)}>
+                    Fermer
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

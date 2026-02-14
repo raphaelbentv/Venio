@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { apiFetch } from '../../lib/api'
+import { CRM_SERVICE_TYPES } from '../../lib/formatUtils'
 import { createAdminClient } from '../../services/adminClients'
 import '../espace-client/ClientPortal.css'
 
@@ -10,10 +11,11 @@ const ClientAccountNew = () => {
   const navigate = useNavigate()
   const [admins, setAdmins] = useState([])
   const [form, setForm] = useState({
+    companyName: '',
+    serviceType: '',
     name: '',
     email: '',
     password: '',
-    companyName: '',
     phone: '',
     website: '',
     source: 'AUTRE',
@@ -45,6 +47,7 @@ const ClientAccountNew = () => {
         email: form.email,
         password: form.password,
         companyName: form.companyName,
+        serviceType: form.serviceType,
         phone: form.phone,
         website: form.website,
         source: form.source,
@@ -80,7 +83,26 @@ const ClientAccountNew = () => {
         <form className="portal-list" onSubmit={handleSubmit}>
           <div className="portal-grid">
             <div>
-              <label style={{ display: 'block', marginBottom: 8, fontSize: 14, color: 'rgba(255, 255, 255, 0.7)' }}>Nom du client</label>
+              <label style={{ display: 'block', marginBottom: 8, fontSize: 14, color: 'rgba(255, 255, 255, 0.7)' }}>Société (nom de l’entreprise) *</label>
+              <input
+                className="portal-input"
+                placeholder="Nom de la société"
+                value={form.companyName}
+                onChange={(event) => setForm({ ...form, companyName: event.target.value })}
+                required
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: 8, fontSize: 14, color: 'rgba(255, 255, 255, 0.7)' }}>Service (pour lequel le client paie)</label>
+              <select className="portal-input" value={form.serviceType} onChange={(event) => setForm({ ...form, serviceType: event.target.value })}>
+                <option value="">—</option>
+                {CRM_SERVICE_TYPES.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: 8, fontSize: 14, color: 'rgba(255, 255, 255, 0.7)' }}>Nom du contact</label>
               <input
                 className="portal-input"
                 placeholder="Nom complet"
@@ -90,7 +112,7 @@ const ClientAccountNew = () => {
               />
             </div>
             <div>
-              <label style={{ display: 'block', marginBottom: 8, fontSize: 14, color: 'rgba(255, 255, 255, 0.7)' }}>Email</label>
+              <label style={{ display: 'block', marginBottom: 8, fontSize: 14, color: 'rgba(255, 255, 255, 0.7)' }}>Email *</label>
               <input
                 className="portal-input"
                 type="email"
@@ -101,7 +123,7 @@ const ClientAccountNew = () => {
               />
             </div>
             <div>
-              <label style={{ display: 'block', marginBottom: 8, fontSize: 14, color: 'rgba(255, 255, 255, 0.7)' }}>Mot de passe</label>
+              <label style={{ display: 'block', marginBottom: 8, fontSize: 14, color: 'rgba(255, 255, 255, 0.7)' }}>Mot de passe *</label>
               <input
                 className="portal-input"
                 type="password"
@@ -109,15 +131,6 @@ const ClientAccountNew = () => {
                 value={form.password}
                 onChange={(event) => setForm({ ...form, password: event.target.value })}
                 required
-              />
-            </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: 8, fontSize: 14, color: 'rgba(255, 255, 255, 0.7)' }}>Société</label>
-              <input
-                className="portal-input"
-                placeholder="Nom de la société"
-                value={form.companyName}
-                onChange={(event) => setForm({ ...form, companyName: event.target.value })}
               />
             </div>
             <div>

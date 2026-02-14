@@ -41,6 +41,11 @@ export async function getAdminClient(clientId) {
   return extractData(response)
 }
 
+export async function getAdminClientCloud(clientId) {
+  const response = await apiFetch(`/api/admin/clients/${clientId}/cloud`)
+  return extractData(response)
+}
+
 export async function updateAdminClient(clientId, payload) {
   const response = await apiFetch(`/api/admin/clients/${clientId}`, {
     method: 'PATCH',

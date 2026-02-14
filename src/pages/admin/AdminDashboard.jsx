@@ -14,6 +14,7 @@ const AdminDashboard = () => {
   const [allProjects, setAllProjects] = useState([])
   const [adminCount, setAdminCount] = useState(0)
   const [crmLeadCount, setCrmLeadCount] = useState(0)
+  const [crmAlerts, setCrmAlerts] = useState({ coldLeads: [], overdueLeads: [], staleLeads: [] })
   const [loading, setLoading] = useState(false)
   const canManageAdmins = hasPermission(user, PERMISSIONS.MANAGE_ADMINS)
   const canManageClients = hasPermission(user, PERMISSIONS.MANAGE_CLIENTS)
@@ -35,16 +36,18 @@ const AdminDashboard = () => {
           setProjectCount(projects.projects?.length || 0)
         }
         if (isSuperAdmin) {
-          const [clientsRes, projectsRes, adminsRes, leadsRes] = await Promise.all([
+          const [clientsRes, projectsRes, adminsRes, leadsRes, alertsRes] = await Promise.all([
             apiFetch('/api/admin/users?role=CLIENT'),
             apiFetch('/api/admin/projects?archived=all&includeClient=true'),
             apiFetch('/api/admin/admins'),
             apiFetch('/api/admin/crm/leads').catch(() => ({ leads: [] })),
+            apiFetch('/api/admin/crm/alerts').catch(() => ({ coldLeads: [], overdueLeads: [], staleLeads: [] })),
           ])
           setAllClients(clientsRes.users || [])
           setAllProjects(projectsRes.projects || [])
           setAdminCount(adminsRes.users?.length || 0)
           setCrmLeadCount(leadsRes.leads?.length || 0)
+          setCrmAlerts(alertsRes || { coldLeads: [], overdueLeads: [], staleLeads: [] })
         }
       } catch (err) {
         // Silent for dashboard
@@ -195,6 +198,19 @@ const AdminDashboard = () => {
               <div className="admin-widget-label">Statut Terminé</div>
               <div className="admin-widget-value">{stats.statusCounts.TERMINE}</div>
             </div>
+            {/* CRM Alerts Widgets */}
+            <Link to="/admin/crm" className="admin-widget admin-widget-alert admin-widget-alert-cold">
+              <div className="admin-widget-label">Leads froids</div>
+              <div className="admin-widget-value">{crmAlerts.coldLeads?.length || 0}</div>
+            </Link>
+            <Link to="/admin/crm" className="admin-widget admin-widget-alert admin-widget-alert-overdue">
+              <div className="admin-widget-label">Actions CRM en retard</div>
+              <div className="admin-widget-value">{crmAlerts.overdueLeads?.length || 0}</div>
+            </Link>
+            <Link to="/admin/crm" className="admin-widget admin-widget-alert admin-widget-alert-stale">
+              <div className="admin-widget-label">Leads bloqués</div>
+              <div className="admin-widget-value">{crmAlerts.staleLeads?.length || 0}</div>
+            </Link>
           </div>
 
           <div className="portal-card" style={{ marginTop: 24 }}>

@@ -7,6 +7,7 @@ import {
   createAdminClientNote,
   getAdminClient,
   getAdminClientBillingSummary,
+  getAdminClientCloud,
   getAdminClientProgress,
   listAdminClientActivities,
   listAdminClientBillingDocuments,
@@ -19,17 +20,29 @@ import {
   deleteAdminClientContact,
   deleteAdminClientNote,
 } from '../../services/adminClients'
+import { CRM_SERVICE_TYPES } from '../../lib/formatUtils'
 import '../espace-client/ClientPortal.css'
 import './AdminPortal.css'
 
 const TABS = [
   { id: 'overview', label: "Vue d'ensemble" },
+  { id: 'cloud', label: 'Cloud' },
   { id: 'projects', label: 'Projets' },
   { id: 'deliverables', label: 'Livrables' },
   { id: 'contacts', label: 'Contacts' },
   { id: 'notes', label: 'Notes & Activités' },
   { id: 'billing', label: 'Facturation' },
 ]
+
+const FOLDER_ICONS = {
+  Contrats: '📄',
+  Devis: '📋',
+  Factures: '🧾',
+  Livrables: '📦',
+  Communication: '💬',
+  Briefs: '📝',
+  Assets: '🎨',
+}
 
 const STATUS_OPTIONS = ['PROSPECT', 'ACTIF', 'EN_PAUSE', 'CLOS', 'ARCHIVE']
 const HEALTH_OPTIONS = ['BON', 'ATTENTION', 'CRITIQUE']
@@ -48,6 +61,7 @@ const ClientAccountDetail = () => {
   const [activities, setActivities] = useState([])
   const [billingSummary, setBillingSummary] = useState(null)
   const [billingDocuments, setBillingDocuments] = useState([])
+  const [cloudInfo, setCloudInfo] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
@@ -71,6 +85,7 @@ const ClientAccountDetail = () => {
         activitiesRes,
         billingSummaryRes,
         billingDocumentsRes,
+        cloudRes,
       ] = await Promise.all([
         getAdminClient(userId),
         listAdminClientProjects(userId),
@@ -81,6 +96,7 @@ const ClientAccountDetail = () => {
         listAdminClientActivities(userId),
         getAdminClientBillingSummary(userId),
         listAdminClientBillingDocuments(userId),
+        getAdminClientCloud(userId).catch(() => ({ cloud: null })),
       ])
 
       setClient(clientRes.client || null)
@@ -92,6 +108,7 @@ const ClientAccountDetail = () => {
       setActivities(activitiesRes.activities || [])
       setBillingSummary(billingSummaryRes.summary || null)
       setBillingDocuments(billingDocumentsRes.documents || [])
+      setCloudInfo(cloudRes.cloud || null)
     } catch (err) {
       setError(err.message || 'Erreur chargement compte')
     } finally {
@@ -227,15 +244,18 @@ const ClientAccountDetail = () => {
           <span>/</span>
           <Link to="/admin/comptes-clients">Comptes clients</Link>
           <span>/</span>
-          <span style={{ color: '#ffffff' }}>{client?.name || 'Chargement...'}</span>
+          <span style={{ color: '#ffffff' }}>{client?.companyName || client?.name || 'Chargement...'}</span>
         </div>
 
         {client && (
           <div className="admin-header" style={{ marginBottom: 16 }}>
             <div>
-              <h1 style={{ marginBottom: 8 }}>{client.name}</h1>
-              <p style={{ color: 'rgba(255,255,255,0.65)', margin: 0 }}>{client.email}</p>
-              <p style={{ color: 'rgba(255,255,255,0.5)', margin: '6px 0 0 0' }}>{client.companyName || 'Société non renseignée'}</p>
+              <h1 style={{ marginBottom: 8 }}>{client.companyName || client.name || 'Société non renseignée'}</h1>
+              {client.serviceType && (
+                <p style={{ color: 'rgba(255,255,255,0.8)', margin: '0 0 4px 0', fontWeight: 600 }}>Service : {client.serviceType}</p>
+              )}
+              <p style={{ color: 'rgba(255,255,255,0.65)', margin: 0 }}>Contact : {client.name}</p>
+              <p style={{ color: 'rgba(255,255,255,0.5)', margin: '4px 0 0 0' }}>{client.email}</p>
             </div>
             <div className="admin-actions">
               <Link className="portal-button portal-action-link" to={`/admin/projets/nouveau?clientId=${userId}`} title="Ajouter un projet">
@@ -297,6 +317,34 @@ const ClientAccountDetail = () => {
 
                 <div className="portal-grid">
                   <div>
+                    <label style={{ display: 'block', marginBottom: 8, opacity: 0.7 }}>Société</label>
+                    <input
+                      className="portal-input"
+                      value={client?.companyName || ''}
+                      onChange={(event) => setClient((current) => ({ ...current, companyName: event.target.value }))}
+                      onBlur={(event) => saveClientPatch({ companyName: event.target.value })}
+                      placeholder="Nom de l'entreprise"
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: 8, opacity: 0.7 }}>Service (pour lequel le client paie)</label>
+                    <select
+                      className="portal-input"
+                      value={client?.serviceType || ''}
+                      onChange={(event) => {
+                        const v = event.target.value
+                        setClient((current) => ({ ...current, serviceType: v }))
+                        saveClientPatch({ serviceType: v })
+                      }}
+                      disabled={saving}
+                    >
+                      <option value="">—</option>
+                      {CRM_SERVICE_TYPES.map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
                     <label style={{ display: 'block', marginBottom: 8, opacity: 0.7 }}>Statut client</label>
                     <select
                       className="portal-input"
@@ -341,6 +389,56 @@ const ClientAccountDetail = () => {
                     />
                   </div>
                 </div>
+              </div>
+            )}
+
+            {activeTab === 'cloud' && (
+              <div className="portal-list">
+                {!cloudInfo || !cloudInfo.enabled ? (
+                  <div className="admin-empty-state">
+                    <div className="admin-empty-state-icon">☁️</div>
+                    <p className="admin-empty-state-text">Nextcloud non configuré</p>
+                    <p style={{ opacity: 0.5, fontSize: 13 }}>Configurez les variables NEXTCLOUD_* dans le backend pour activer l'intégration cloud.</p>
+                  </div>
+                ) : (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                      <p style={{ margin: 0, opacity: 0.7, fontSize: 14 }}>
+                        Dossier client : <strong>{cloudInfo.clientFolder}</strong>
+                      </p>
+                      <a
+                        href={cloudInfo.webUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="portal-button secondary"
+                        style={{ fontSize: 13, textDecoration: 'none' }}
+                      >
+                        Ouvrir le dossier racine
+                      </a>
+                    </div>
+                    <div className="cloud-folders-grid">
+                      {(cloudInfo.folders || []).map((folder) => (
+                        <a
+                          key={folder.name}
+                          href={folder.webUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="cloud-folder-card"
+                        >
+                          <span className="cloud-folder-icon">{FOLDER_ICONS[folder.name] || '📁'}</span>
+                          <span className="cloud-folder-name">{folder.name}</span>
+                          <span className="cloud-folder-open">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+                              <polyline points="15 3 21 3 21 9" />
+                              <line x1="10" y1="14" x2="21" y2="3" />
+                            </svg>
+                          </span>
+                        </a>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             )}
 

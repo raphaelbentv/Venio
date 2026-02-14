@@ -41,6 +41,20 @@ export function fromDateTimeLocal(value) {
   return Number.isNaN(d.getTime()) ? '' : d.toISOString()
 }
 
+/** Types de service CRM / comptes clients (lead → client) */
+export const CRM_SERVICE_TYPES = [
+  'Communication',
+  'Développement web',
+  'Développement mobile',
+  'Conseil stratégique',
+  'Design & UX',
+  'Marketing digital',
+  'SEO/SEA',
+  'Formation',
+  'Maintenance',
+  'Autre',
+]
+
 /** Suggestions for service types (admin project form) */
 export const SUGGESTIONS_SERVICE_TYPES = [
   'Design',

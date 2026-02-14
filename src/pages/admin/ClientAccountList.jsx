@@ -146,8 +146,15 @@ const ClientAccountList = () => {
               {clients.map((client) => (
                 <div key={client._id} className="admin-list-item">
                   <div className="admin-list-item-content">
-                    <h3 className="admin-list-item-title">{client.name}</h3>
-                    <p className="admin-list-item-subtitle">{client.email}</p>
+                    <h3 className="admin-list-item-title">{client.companyName || client.name}</h3>
+                    <p className="admin-list-item-subtitle">
+                      {client.serviceType && <span className="portal-badge" style={{ marginRight: 8 }}>{client.serviceType}</span>}
+                      {client.companyName && client.companyName !== client.name && (
+                        <span style={{ opacity: 0.85 }}>Contact : {client.name}</span>
+                      )}
+                      {(!client.companyName || client.companyName === client.name) && client.email}
+                      {client.companyName && client.companyName !== client.name && ` • ${client.email}`}
+                    </p>
                     <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 8 }}>
                       <span className="portal-badge">{STATUS_LABELS[client.status] || client.status || 'Actif'}</span>
                       <span className="portal-badge" style={{ border: `1px solid ${HEALTH_COLORS[client.healthStatus] || '#64748b'}` }}>

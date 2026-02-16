@@ -1,5 +1,6 @@
 import express from 'express'
 import bcrypt from 'bcryptjs'
+import { body, validationResult } from 'express-validator'
 import auth from '../../middleware/auth.js'
 import { requireAdmin, requireAnyPermission, requirePermission } from '../../middleware/role.js'
 import User from '../../models/User.js'
@@ -29,12 +30,20 @@ router.get(
   }
 )
 
-router.post('/', requirePermission(PERMISSIONS.MANAGE_ADMINS), async (req, res, next) => {
+router.post(
+  '/',
+  requirePermission(PERMISSIONS.MANAGE_ADMINS),
+  body('email').isEmail().withMessage('Email invalide').normalizeEmail(),
+  body('password').isLength({ min: 6 }).withMessage('Mot de passe: minimum 6 caractères'),
+  body('name').trim().notEmpty().withMessage('Le nom est requis'),
+  async (req, res, next) => {
   try {
-    const { email, password, name, role } = req.body || {}
-    if (!email || !password || !name) {
-      return res.status(400).json({ error: 'Email, password, and name are required' })
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ error: errors.array()[0].msg, errors: errors.array() })
     }
+
+    const { email, password, name, role } = req.body || {}
 
     const normalizedEmail = email.toLowerCase().trim()
     const existing = await User.findOne({ email: normalizedEmail })
@@ -69,7 +78,8 @@ router.post('/', requirePermission(PERMISSIONS.MANAGE_ADMINS), async (req, res, 
   } catch (err) {
     return next(err)
   }
-})
+  }
+)
 
 router.get('/:userId', requirePermission(PERMISSIONS.MANAGE_ADMINS), async (req, res, next) => {
   try {
@@ -83,8 +93,18 @@ router.get('/:userId', requirePermission(PERMISSIONS.MANAGE_ADMINS), async (req,
   }
 })
 
-router.patch('/:userId', requirePermission(PERMISSIONS.MANAGE_ADMINS), async (req, res, next) => {
+router.patch(
+  '/:userId',
+  requirePermission(PERMISSIONS.MANAGE_ADMINS),
+  body('role').optional().isIn(ADMIN_ROLES).withMessage('Rôle invalide'),
+  body('password').optional().isLength({ min: 6 }).withMessage('Mot de passe: minimum 6 caractères'),
+  async (req, res, next) => {
   try {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ error: errors.array()[0].msg, errors: errors.array() })
+    }
+
     const { name, role, password } = req.body || {}
     const user = await User.findById(req.params.userId)
     if (!user || !ADMIN_ROLES.includes(user.role)) {
@@ -129,7 +149,8 @@ router.patch('/:userId', requirePermission(PERMISSIONS.MANAGE_ADMINS), async (re
   } catch (err) {
     return next(err)
   }
-})
+  }
+)
 
 router.delete('/:userId', requirePermission(PERMISSIONS.MANAGE_ADMINS), async (req, res, next) => {
   try {

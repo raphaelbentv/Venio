@@ -1,5 +1,8 @@
 import express from 'express'
 import cors from 'cors'
+import helmet from 'helmet'
+import compression from 'compression'
+import rateLimit from 'express-rate-limit'
 import morgan from 'morgan'
 import dotenv from 'dotenv'
 import mongoose from 'mongoose'
@@ -24,25 +27,55 @@ dotenv.config()
 const app = express()
 const port = process.env.PORT || 3000
 const mongoUri = process.env.MONGODB_URI
+const isProd = process.env.NODE_ENV === 'production'
 
 if (!mongoUri) {
   throw new Error('MONGODB_URI is required')
 }
 
+// Security headers
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  contentSecurityPolicy: false,
+}))
+
+// Compression
+app.use(compression())
+
+// CORS
 app.use(
   cors({
     origin: process.env.CORS_ORIGIN || 'http://localhost:5001',
     credentials: true,
   })
 )
+
+// Global rate limit: 200 requests per minute per IP
+app.use(rateLimit({
+  windowMs: 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Trop de requêtes, veuillez réessayer dans un instant.' },
+}))
+
 app.use(express.json({ limit: '2mb' }))
-app.use(morgan('dev'))
+app.use(morgan(isProd ? 'combined' : 'dev'))
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' })
 })
 
-app.use('/api/auth', authRoutes)
+// Strict rate limit on auth: 10 requests per minute
+const authLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Trop de tentatives, veuillez réessayer dans une minute.' },
+})
+app.use('/api/auth', authLimiter, authRoutes)
+
 app.use('/api/projects', projectRoutes)
 app.use('/api/documents', documentRoutes)
 
@@ -62,10 +95,17 @@ app.use((_req, res) => {
   res.status(404).json({ error: 'Not found' })
 })
 
+// Global error handler — hide stack traces in production
 app.use((err, _req, res, _next) => {
   const status = err.status || 500
+
+  if (!isProd) {
+    console.error(err)
+  }
+
   res.status(status).json({
-    error: err.message || 'Server error',
+    error: status >= 500 && isProd ? 'Erreur interne du serveur' : (err.message || 'Server error'),
+    ...(status === 400 && err.errors ? { errors: err.errors } : {}),
   })
 })
 

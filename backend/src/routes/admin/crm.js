@@ -1,5 +1,6 @@
 import express from 'express'
 import bcrypt from 'bcryptjs'
+import { body, validationResult } from 'express-validator'
 import auth from '../../middleware/auth.js'
 import { requireAdmin, requirePermission } from '../../middleware/role.js'
 import Lead from '../../models/Lead.js'
@@ -160,12 +161,19 @@ router.get('/pipeline', requirePermission(PERMISSIONS.VIEW_CRM), async (_req, re
 })
 
 // Create lead
-router.post('/leads', requirePermission(PERMISSIONS.MANAGE_CRM), async (req, res, next) => {
+router.post(
+  '/leads',
+  requirePermission(PERMISSIONS.MANAGE_CRM),
+  body('company').trim().notEmpty().withMessage('Le nom de l\'entreprise est requis'),
+  body('contactEmail').optional({ values: 'falsy' }).isEmail().withMessage('Email de contact invalide'),
+  async (req, res, next) => {
   try {
-    const payload = normalizeLeadPayload(req.body || {})
-    if (!payload.company) {
-      return res.status(400).json({ error: 'company is required' })
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ error: errors.array()[0].msg, errors: errors.array() })
     }
+
+    const payload = normalizeLeadPayload(req.body || {})
 
     // Load settings for automation control
     const settings = await CrmSettings.getSettings()
@@ -232,7 +240,8 @@ router.post('/leads', requirePermission(PERMISSIONS.MANAGE_CRM), async (req, res
   } catch (err) {
     return next(err)
   }
-})
+  }
+)
 
 // Update lead
 router.patch('/leads/:id', requirePermission(PERMISSIONS.MANAGE_CRM), async (req, res, next) => {

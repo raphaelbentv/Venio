@@ -1,6 +1,7 @@
 import express from 'express'
 import bcrypt from 'bcryptjs'
 import mongoose from 'mongoose'
+import { body, validationResult } from 'express-validator'
 import auth from '../../middleware/auth.js'
 import { requireAdmin, requirePermission } from '../../middleware/role.js'
 import { PERMISSIONS } from '../../lib/permissions.js'
@@ -194,12 +195,21 @@ router.get('/', requirePermission(PERMISSIONS.MANAGE_CLIENTS), async (req, res, 
   }
 })
 
-router.post('/', requirePermission(PERMISSIONS.MANAGE_CLIENTS), async (req, res, next) => {
+router.post(
+  '/',
+  requirePermission(PERMISSIONS.MANAGE_CLIENTS),
+  body('companyName').trim().notEmpty().withMessage('Le nom de l\'entreprise est requis'),
+  body('name').trim().notEmpty().withMessage('Le nom est requis'),
+  body('email').isEmail().withMessage('Email invalide').normalizeEmail(),
+  body('password').isLength({ min: 6 }).withMessage('Mot de passe: minimum 6 caractères'),
+  async (req, res, next) => {
   try {
-    const { email, password, name } = req.body || {}
-    if (!email || !password || !name) {
-      return error(res, 400, 'name, email and password are required', 'VALIDATION_ERROR')
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ error: errors.array()[0].msg, errors: errors.array() })
     }
+
+    const { email, password, name } = req.body || {}
 
     const normalizedEmail = String(email).toLowerCase().trim()
     const existing = await User.findOne({ email: normalizedEmail })
@@ -248,7 +258,8 @@ router.post('/', requirePermission(PERMISSIONS.MANAGE_CLIENTS), async (req, res,
   } catch (err) {
     return next(err)
   }
-})
+  }
+)
 
 router.get('/:id', requirePermission(PERMISSIONS.MANAGE_CLIENTS), async (req, res, next) => {
   try {
@@ -279,8 +290,17 @@ router.get('/:id/cloud', requirePermission(PERMISSIONS.MANAGE_CLIENTS), async (r
   }
 })
 
-router.patch('/:id', requirePermission(PERMISSIONS.MANAGE_CLIENTS), async (req, res, next) => {
+router.patch(
+  '/:id',
+  requirePermission(PERMISSIONS.MANAGE_CLIENTS),
+  body('email').optional().isEmail().withMessage('Email invalide').normalizeEmail(),
+  async (req, res, next) => {
   try {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ error: errors.array()[0].msg, errors: errors.array() })
+    }
+
     const client = await ensureClient(req.params.id)
     if (!client) {
       return error(res, 404, 'Client not found', 'CLIENT_NOT_FOUND')
@@ -335,7 +355,8 @@ router.patch('/:id', requirePermission(PERMISSIONS.MANAGE_CLIENTS), async (req, 
   } catch (err) {
     return next(err)
   }
-})
+  }
+)
 
 router.post('/:id/archive', requirePermission(PERMISSIONS.MANAGE_CLIENTS), async (req, res, next) => {
   try {

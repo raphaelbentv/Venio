@@ -13,6 +13,20 @@ const router = express.Router()
 router.use(auth)
 router.use(requireAdmin)
 
+// MIME types autorises pour l'upload
+const ALLOWED_MIME_TYPES = new Set([
+  'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+  'application/pdf',
+  'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  'text/plain', 'text/csv',
+  'application/zip', 'application/x-zip-compressed',
+  'video/mp4', 'video/quicktime', 'video/webm',
+  'audio/mpeg', 'audio/wav', 'audio/ogg',
+  'application/json',
+])
+
 // Configuration multer pour l'upload
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -23,12 +37,23 @@ const storage = multer.diskStorage({
     cb(null, uploadDir)
   },
   filename: (req, file, cb) => {
+    const safeName = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_')
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9)
-    cb(null, uniqueSuffix + path.extname(file.originalname))
+    cb(null, uniqueSuffix + '-' + safeName)
   },
 })
 
-const upload = multer({ storage })
+const upload = multer({
+  storage,
+  limits: { fileSize: 20 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (ALLOWED_MIME_TYPES.has(file.mimetype)) {
+      cb(null, true)
+    } else {
+      cb(new Error(`Type de fichier non autorisé: ${file.mimetype}`))
+    }
+  },
+})
 
 // GET /api/admin/projects/:projectId/items - Lister les items d'un projet
 router.get('/:projectId/items', requirePermission(PERMISSIONS.VIEW_CONTENT), async (req, res) => {

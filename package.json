@@ -11,7 +11,8 @@
     "postbuild": "node scripts/create-htaccess.js && node scripts/generate-sitemap.js",
     "sitemap": "node scripts/generate-sitemap.js",
     "deploy:check": "node scripts/prepare-deploy.js",
-    "deploy:ionos": "npm run build:ionos && npm run deploy:check"
+    "deploy:ionos": "npm run build:ionos && npm run deploy:check",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
@@ -24,6 +25,7 @@
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "@vitejs/plugin-react": "^4.7.0",
+    "typescript": "^5.9.3",
     "vite": "^5.4.21"
   }
 }

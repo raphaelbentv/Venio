@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { useTabState } from '../../hooks/useTabState'
 import { useAuth } from '../../context/AuthContext'
 import {
   archiveAdminClient,
@@ -63,7 +64,7 @@ const ClientAccountDetail = () => {
   const { user } = useAuth()
   const { userId } = useParams<{ userId: string }>()
 
-  const [activeTab, setActiveTab] = useState<string>('overview')
+  const [activeTab, setActiveTab] = useTabState('overview')
   const [client, setClient] = useState<Client | null>(null)
   const [projects, setProjects] = useState<Project[]>([])
   const [progress, setProgress] = useState<{ progressPercent?: number } | null>(null)

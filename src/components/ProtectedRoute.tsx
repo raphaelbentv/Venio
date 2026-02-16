@@ -11,7 +11,11 @@ const ProtectedRoute = ({ children, role, redirectTo }: ProtectedRouteProps) => 
   const { user, loading } = useAuth()
 
   if (loading) {
-    return null
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <div className="portal-spinner" />
+      </div>
+    )
   }
 
   if (!user) {

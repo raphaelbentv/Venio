@@ -63,10 +63,15 @@ const ClientLogin = () => {
             onChange={(event) => setForm({ ...form, password: event.target.value })}
             required
           />
-          {error && <p>{error}</p>}
+          {error && <p style={{ color: '#ef4444' }}>{error}</p>}
           <button className="portal-button" type="submit" disabled={loading}>
             {loading ? 'Connexion...' : 'Se connecter'}
           </button>
+          <p style={{ textAlign: 'center', marginTop: '16px', fontSize: '14px' }}>
+            <a href="mailto:contact@venio.fr?subject=Réinitialisation mot de passe" style={{ color: 'var(--primary)', textDecoration: 'none' }}>
+              Mot de passe oublié ?
+            </a>
+          </p>
         </form>
       </div>
     </div>

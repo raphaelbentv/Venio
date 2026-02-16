@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { apiFetch } from '../../lib/api'
+import { exportToCsv } from '../../lib/exportCsv'
 import { useAuth } from '../../context/AuthContext'
+import ConfirmModal from '../../components/ConfirmModal'
 import type { User } from '../../types/auth.types'
 import '../espace-client/ClientPortal.css'
 import './AdminPortal.css'
@@ -16,6 +18,7 @@ const AdminList = () => {
   const { user } = useAuth()
   const [admins, setAdmins] = useState<User[]>([])
   const [error, setError] = useState<string>('')
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
   useEffect(() => {
     const load = async () => {
@@ -29,14 +32,20 @@ const AdminList = () => {
     load()
   }, [])
 
-  const handleDelete = async (adminId: string) => {
-    if (!window.confirm('Supprimer cet administrateur ?')) return
+  const handleDelete = (adminId: string) => {
+    setDeleteTarget(adminId)
+  }
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return
     setError('')
     try {
-      await apiFetch(`/api/admin/admins/${adminId}`, { method: 'DELETE' })
-      setAdmins((prev) => prev.filter((admin) => admin._id !== adminId))
+      await apiFetch(`/api/admin/admins/${deleteTarget}`, { method: 'DELETE' })
+      setAdmins((prev) => prev.filter((admin) => admin._id !== deleteTarget))
     } catch (err: unknown) {
       setError((err as Error).message || 'Erreur suppression admin')
+    } finally {
+      setDeleteTarget(null)
     }
   }
 
@@ -51,6 +60,25 @@ const AdminList = () => {
         <div className="admin-header">
           <h1>Comptes admin</h1>
           <div className="admin-actions portal-actions-reveal">
+            <button
+              className="portal-button secondary portal-action-link"
+              type="button"
+              title="Exporter CSV"
+              onClick={() => {
+                const headers = ['Nom', 'Email', 'Role']
+                const rows = admins.map((admin) => [
+                  admin.name || '',
+                  admin.email || '',
+                  roleLabels[admin.role] || admin.role || '',
+                ])
+                exportToCsv('admins.csv', headers, rows)
+              }}
+            >
+              <span className="portal-action-icon" aria-hidden>
+                <svg viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+              </span>
+              <span className="portal-action-label">Exporter CSV</span>
+            </button>
             <Link className="portal-button portal-action-link" to="/admin/comptes-admin/nouveau" title="Nouvel administrateur">
               <span className="portal-action-icon" aria-hidden>
                 <svg viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><line x1="19" y1="8" x2="19" y2="14" /><line x1="22" y1="11" x2="16" y2="11" /></svg>
@@ -102,6 +130,17 @@ const AdminList = () => {
           </div>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={deleteTarget !== null}
+        title="Supprimer un administrateur"
+        message="Supprimer cet administrateur ? Cette action est irr\u00e9versible."
+        confirmLabel="Supprimer"
+        cancelLabel="Annuler"
+        variant="danger"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }

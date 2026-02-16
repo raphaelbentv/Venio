@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { useTabState } from '../../hooks/useTabState'
 import { apiFetch, getToken } from '../../lib/api'
 import {
   formatCurrency,
@@ -86,7 +87,7 @@ const AdminProjectDetail = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [billingDocuments, setBillingDocuments] = useState<BillingDocument[]>([])
   const [error, setError] = useState<string>('')
-  const [activeTab, setActiveTab] = useState<string>('content') // details, content, updates, documents
+  const [activeTab, setActiveTab] = useTabState('content')
   const canEditProjects = hasPermission(user, PERMISSIONS.EDIT_PROJECTS)
   const canEditContent = hasPermission(user, PERMISSIONS.EDIT_CONTENT)
   const canManageBilling = hasPermission(user, PERMISSIONS.MANAGE_BILLING)

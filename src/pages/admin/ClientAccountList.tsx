@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { listAdminClients } from '../../services/adminClients'
+import { exportToCsv } from '../../lib/exportCsv'
+import { SkeletonRow } from '../../components/Skeleton'
 import type { Client } from '../../types/client.types'
 import type { PaginationMeta } from '../../types/api.types'
 import '../espace-client/ClientPortal.css'
@@ -103,6 +105,29 @@ const ClientAccountList = () => {
         <div className="admin-header">
           <h1>Comptes clients</h1>
           <div className="admin-actions portal-actions-reveal">
+            <button
+              className="portal-button secondary portal-action-link"
+              type="button"
+              title="Exporter CSV"
+              onClick={() => {
+                const headers = ['Nom', 'Entreprise', 'Email', 'Service', 'Statut', 'Sante', 'Responsable']
+                const rows = clients.map((client) => [
+                  client.name || '',
+                  client.companyName || '',
+                  client.email || '',
+                  client.serviceType || '',
+                  STATUS_LABELS[client.status] || client.status || '',
+                  client.healthStatus || '',
+                  client.ownerAdminId?.name || 'Non assigne',
+                ])
+                exportToCsv('clients.csv', headers, rows)
+              }}
+            >
+              <span className="portal-action-icon" aria-hidden>
+                <svg viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+              </span>
+              <span className="portal-action-label">Exporter CSV</span>
+            </button>
             <Link className="portal-button portal-action-link" to="/admin/comptes-clients/nouveau" title="Nouveau compte">
               <span className="portal-action-icon" aria-hidden>
                 <svg viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" /></svg>
@@ -145,7 +170,11 @@ const ClientAccountList = () => {
 
       <div className="portal-card" style={{ marginTop: 24 }}>
         {loading ? (
-          <p style={{ margin: 0, opacity: 0.7 }}>Chargement...</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <SkeletonRow key={i} />
+            ))}
+          </div>
         ) : clients.length === 0 ? (
           <div className="admin-empty-state">
             <div className="admin-empty-state-icon">👥</div>

@@ -32,6 +32,15 @@ export async function apiFetch<T = unknown>(path: string, options: ApiFetchOptio
   }
 
   if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      setToken(null)
+      const currentPath = window.location.pathname
+      if (currentPath.startsWith('/admin')) {
+        window.location.href = '/admin/login'
+      } else if (currentPath.startsWith('/espace-client')) {
+        window.location.href = '/espace-client/login'
+      }
+    }
     const message = (data as Record<string, unknown>)?.error as string || 'Erreur serveur'
     throw new Error(message)
   }

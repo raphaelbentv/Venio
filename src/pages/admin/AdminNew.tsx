@@ -2,10 +2,27 @@ import React, { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { apiFetch } from '../../lib/api'
 import { useAuth } from '../../context/AuthContext'
+import FormField from '../../components/FormField'
+import { useFormValidation } from '../../hooks/useFormValidation'
+import type { ValidationSchema } from '../../hooks/useFormValidation'
 import { ADMIN_ROLES, getPermissionsForRole, PERMISSIONS } from '../../lib/permissions'
 import type { User } from '../../types/auth.types'
 import '../espace-client/ClientPortal.css'
 import './AdminPortal.css'
+
+type AdminFormField = 'name' | 'email' | 'password'
+
+const adminValidationSchema: ValidationSchema<AdminFormField> = {
+  name: [{ type: 'required', message: 'Le nom est requis.' }],
+  email: [
+    { type: 'required', message: "L'email est requis." },
+    { type: 'email', message: 'Adresse email invalide.' },
+  ],
+  password: [
+    { type: 'required', message: 'Le mot de passe est requis.' },
+    { type: 'minLength', value: 6, message: 'Minimum 6 caractères.' },
+  ],
+}
 
 const roleMeta: Record<string, { label: string; description: string }> = {
   SUPER_ADMIN: {
@@ -43,6 +60,7 @@ const AdminNew = () => {
   const [form, setForm] = useState<{ name: string; email: string; password: string; role: string }>({ name: '', email: '', password: '', role: 'ADMIN' })
   const [error, setError] = useState<string>('')
   const [loading, setLoading] = useState<boolean>(false)
+  const { errors: fieldErrors, validate, validateField } = useFormValidation<AdminFormField>(adminValidationSchema)
 
   const availableRoles = useMemo(() => {
     return ADMIN_ROLES.filter((role) => role !== 'SUPER_ADMIN' || user?.role === 'SUPER_ADMIN')
@@ -65,8 +83,13 @@ const AdminNew = () => {
       .map((permission) => permissionLabels[permission] || permission)
   }, [form.role])
 
+  const handleBlur = (field: AdminFormField) => {
+    validateField(field, form[field])
+  }
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    if (!validate(form)) return
     setError('')
     setLoading(true)
     try {
@@ -97,44 +120,35 @@ const AdminNew = () => {
 
       <div className="portal-card" style={{ marginTop: 24 }}>
         <form className="portal-list" onSubmit={handleSubmit}>
-          <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: 'rgba(255, 255, 255, 0.7)' }}>
-              Nom complet
-            </label>
+          <FormField label="Nom complet" error={fieldErrors.name} required>
             <input
               className="portal-input"
               placeholder="Nom complet"
               value={form.name}
               onChange={(event: React.ChangeEvent<HTMLInputElement>) => setForm({ ...form, name: event.target.value })}
-              required
+              onBlur={() => handleBlur('name')}
             />
-          </div>
-          <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: 'rgba(255, 255, 255, 0.7)' }}>
-              Email
-            </label>
+          </FormField>
+          <FormField label="Email" error={fieldErrors.email} required>
             <input
               className="portal-input"
               type="email"
               placeholder="email@exemple.com"
               value={form.email}
               onChange={(event: React.ChangeEvent<HTMLInputElement>) => setForm({ ...form, email: event.target.value })}
-              required
+              onBlur={() => handleBlur('email')}
             />
-          </div>
-          <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: 'rgba(255, 255, 255, 0.7)' }}>
-              Mot de passe
-            </label>
+          </FormField>
+          <FormField label="Mot de passe" error={fieldErrors.password} required>
             <input
               className="portal-input"
               type="password"
               placeholder="Mot de passe sécurisé"
               value={form.password}
               onChange={(event: React.ChangeEvent<HTMLInputElement>) => setForm({ ...form, password: event.target.value })}
-              required
+              onBlur={() => handleBlur('password')}
             />
-          </div>
+          </FormField>
           <div>
             <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: 'rgba(255, 255, 255, 0.7)' }}>
               Rôle

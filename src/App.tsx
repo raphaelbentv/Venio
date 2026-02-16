@@ -2,7 +2,9 @@ import { useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
+import ToastContainer from './components/ToastContainer'
 import ProtectedRoute from './components/ProtectedRoute'
+import { ToastProvider } from './context/ToastContext'
 import Home from './pages/Home'
 import ServicesCommunication from './pages/ServicesCommunication'
 import ServicesDeveloppement from './pages/ServicesDeveloppement'
@@ -16,6 +18,7 @@ import CGU from './pages/CGU'
 import ClientLogin from './pages/espace-client/Login'
 import ClientDashboard from './pages/espace-client/Dashboard'
 import ClientProjectDetail from './pages/espace-client/ProjectDetail'
+import ClientProfile from './pages/espace-client/Profile'
 import AdminLogin from './pages/admin/AdminLogin'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import ClientAccountList from './pages/admin/ClientAccountList'
@@ -42,7 +45,7 @@ function App() {
   }, [])
 
   return (
-    <>
+    <ToastProvider>
       <Navbar />
       <Routes>
         {/* Site vitrine */}
@@ -64,6 +67,14 @@ function App() {
           element={
             <ProtectedRoute role="CLIENT" redirectTo="/espace-client/login">
               <ClientDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/espace-client/profil"
+          element={
+            <ProtectedRoute role="CLIENT" redirectTo="/espace-client/login">
+              <ClientProfile />
             </ProtectedRoute>
           }
         />
@@ -188,7 +199,8 @@ function App() {
         />
       </Routes>
       <Footer />
-    </>
+      <ToastContainer />
+    </ToastProvider>
   )
 }
 

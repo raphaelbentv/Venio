@@ -1,11 +1,29 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { apiFetch } from '../../lib/api'
+import FormField from '../../components/FormField'
+import { useFormValidation } from '../../hooks/useFormValidation'
+import type { ValidationSchema } from '../../hooks/useFormValidation'
 import { CRM_SERVICE_TYPES } from '../../lib/formatUtils'
 import { createAdminClient } from '../../services/adminClients'
 import type { AdminUser } from '../../types/crm.types'
 import type { Client } from '../../types/client.types'
 import '../espace-client/ClientPortal.css'
+
+type ClientFormField = 'companyName' | 'name' | 'email' | 'password'
+
+const clientValidationSchema: ValidationSchema<ClientFormField> = {
+  companyName: [{ type: 'required', message: 'Le nom de la société est requis.' }],
+  name: [{ type: 'required', message: 'Le nom du contact est requis.' }],
+  email: [
+    { type: 'required', message: "L'email est requis." },
+    { type: 'email', message: 'Adresse email invalide.' },
+  ],
+  password: [
+    { type: 'required', message: 'Le mot de passe est requis.' },
+    { type: 'minLength', value: 6, message: 'Minimum 6 caractères.' },
+  ],
+}
 
 const SOURCE_OPTIONS = ['REFERRAL', 'INBOUND', 'OUTBOUND', 'PARTNER', 'AUTRE']
 
@@ -39,6 +57,7 @@ const ClientAccountNew = () => {
   })
   const [error, setError] = useState<string>('')
   const [loading, setLoading] = useState<boolean>(false)
+  const { errors: fieldErrors, validate, validateField } = useFormValidation<ClientFormField>(clientValidationSchema)
 
   useEffect(() => {
     const loadAdmins = async () => {
@@ -52,8 +71,13 @@ const ClientAccountNew = () => {
     loadAdmins()
   }, [])
 
+  const handleBlur = (field: ClientFormField) => {
+    validateField(field, form[field])
+  }
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    if (!validate(form)) return
     setError('')
     setLoading(true)
     try {
@@ -97,16 +121,15 @@ const ClientAccountNew = () => {
       <div className="portal-card" style={{ marginTop: 24 }}>
         <form className="portal-list" onSubmit={handleSubmit}>
           <div className="portal-grid">
-            <div>
-              <label style={{ display: 'block', marginBottom: 8, fontSize: 14, color: 'rgba(255, 255, 255, 0.7)' }}>Société (nom de l'entreprise) *</label>
+            <FormField label="Société (nom de l'entreprise)" error={fieldErrors.companyName} required>
               <input
                 className="portal-input"
                 placeholder="Nom de la société"
                 value={form.companyName}
                 onChange={(event: React.ChangeEvent<HTMLInputElement>) => setForm({ ...form, companyName: event.target.value })}
-                required
+                onBlur={() => handleBlur('companyName')}
               />
-            </div>
+            </FormField>
             <div>
               <label style={{ display: 'block', marginBottom: 8, fontSize: 14, color: 'rgba(255, 255, 255, 0.7)' }}>Service (pour lequel le client paie)</label>
               <select className="portal-input" value={form.serviceType} onChange={(event: React.ChangeEvent<HTMLSelectElement>) => setForm({ ...form, serviceType: event.target.value })}>
@@ -116,38 +139,35 @@ const ClientAccountNew = () => {
                 ))}
               </select>
             </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: 8, fontSize: 14, color: 'rgba(255, 255, 255, 0.7)' }}>Nom du contact</label>
+            <FormField label="Nom du contact" error={fieldErrors.name} required>
               <input
                 className="portal-input"
                 placeholder="Nom complet"
                 value={form.name}
                 onChange={(event: React.ChangeEvent<HTMLInputElement>) => setForm({ ...form, name: event.target.value })}
-                required
+                onBlur={() => handleBlur('name')}
               />
-            </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: 8, fontSize: 14, color: 'rgba(255, 255, 255, 0.7)' }}>Email *</label>
+            </FormField>
+            <FormField label="Email" error={fieldErrors.email} required>
               <input
                 className="portal-input"
                 type="email"
                 placeholder="email@exemple.com"
                 value={form.email}
                 onChange={(event: React.ChangeEvent<HTMLInputElement>) => setForm({ ...form, email: event.target.value })}
-                required
+                onBlur={() => handleBlur('email')}
               />
-            </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: 8, fontSize: 14, color: 'rgba(255, 255, 255, 0.7)' }}>Mot de passe *</label>
+            </FormField>
+            <FormField label="Mot de passe" error={fieldErrors.password} required>
               <input
                 className="portal-input"
                 type="password"
                 placeholder="Mot de passe sécurisé"
                 value={form.password}
                 onChange={(event: React.ChangeEvent<HTMLInputElement>) => setForm({ ...form, password: event.target.value })}
-                required
+                onBlur={() => handleBlur('password')}
               />
-            </div>
+            </FormField>
             <div>
               <label style={{ display: 'block', marginBottom: 8, fontSize: 14, color: 'rgba(255, 255, 255, 0.7)' }}>Téléphone</label>
               <input

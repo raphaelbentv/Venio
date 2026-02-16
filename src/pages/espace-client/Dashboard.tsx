@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { apiFetch } from '../../lib/api'
 import { useAuth } from '../../context/AuthContext'
+import { SkeletonStat, SkeletonGrid } from '../../components/Skeleton'
 import type { Project } from '../../types/project.types'
 import './ClientPortal.css'
 
@@ -24,6 +25,9 @@ const ClientDashboard = () => {
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string>('')
+  const [search, setSearch] = useState<string>('')
+  const [statusFilter, setStatusFilter] = useState<string>('ALL')
+  const [sortBy, setSortBy] = useState<string>('recent')
 
   useEffect(() => {
     const load = async () => {
@@ -43,6 +47,28 @@ const ClientDashboard = () => {
   const completedProjects = projects.filter(p => p.status === 'TERMINE')
   const pendingProjects = projects.filter(p => p.status === 'EN_ATTENTE')
 
+  const filteredProjects = useMemo(() => {
+    let result = [...projects]
+    if (statusFilter !== 'ALL') {
+      result = result.filter(p => p.status === statusFilter)
+    }
+    if (search.trim()) {
+      const q = search.toLowerCase()
+      result = result.filter(p =>
+        p.name.toLowerCase().includes(q) ||
+        (p.description || '').toLowerCase().includes(q) ||
+        (p.summary || '').toLowerCase().includes(q)
+      )
+    }
+    if (sortBy === 'name') {
+      result.sort((a, b) => a.name.localeCompare(b.name))
+    } else if (sortBy === 'status') {
+      const order: Record<string, number> = { EN_COURS: 0, EN_ATTENTE: 1, TERMINE: 2, ANNULE: 3 }
+      result.sort((a, b) => (order[a.status] ?? 9) - (order[b.status] ?? 9))
+    }
+    return result
+  }, [projects, statusFilter, search, sortBy])
+
   return (
     <div className="portal-container client-dashboard">
       <header className="client-dashboard-header">
@@ -53,6 +79,20 @@ const ClientDashboard = () => {
           </div>
           <div className="client-dashboard-user portal-actions-reveal">
             <span className="client-dashboard-user-name">{user?.name}</span>
+            <Link
+              to="/espace-client/profil"
+              className="portal-button client-dashboard-logout portal-action-link"
+              title="Mon profil"
+              style={{ textDecoration: 'none' }}
+            >
+              <span className="portal-action-icon" aria-hidden>
+                <svg viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" stroke="currentColor">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              </span>
+              <span className="portal-action-label">Mon profil</span>
+            </Link>
             <button
               className="portal-button client-dashboard-logout portal-action-link"
               onClick={logout}
@@ -89,9 +129,15 @@ const ClientDashboard = () => {
       </section>
 
       {loading && (
-        <div className="client-dashboard-loading">
-          <div className="client-dashboard-spinner" />
-          <p>Chargement de vos projets…</p>
+        <div style={{ padding: '0 24px' }}>
+          <div className="client-dashboard-stats">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <SkeletonStat key={i} />
+            ))}
+          </div>
+          <div style={{ marginTop: 32 }}>
+            <SkeletonGrid count={3} className="client-dashboard-grid" />
+          </div>
         </div>
       )}
 
@@ -162,15 +208,61 @@ const ClientDashboard = () => {
               </p>
             </div>
 
+            {projects.length > 0 && (
+              <div className="client-dashboard-filters" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '24px' }}>
+                <div style={{ position: 'relative', flex: '1 1 200px', minWidth: '200px' }}>
+                  <svg style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', width: '16px', height: '16px', stroke: 'var(--text-secondary)', fill: 'none', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }} viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                  <input
+                    className="portal-input"
+                    type="text"
+                    placeholder="Rechercher un projet..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    style={{ paddingLeft: '36px' }}
+                  />
+                </div>
+                <select
+                  className="portal-input"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  style={{ flex: '0 0 auto', width: 'auto', minWidth: '140px' }}
+                >
+                  <option value="ALL">Tous les statuts</option>
+                  <option value="EN_COURS">En cours</option>
+                  <option value="EN_ATTENTE">En attente</option>
+                  <option value="TERMINE">Terminé</option>
+                  <option value="ANNULE">Annulé</option>
+                </select>
+                <select
+                  className="portal-input"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  style={{ flex: '0 0 auto', width: 'auto', minWidth: '140px' }}
+                >
+                  <option value="recent">Plus récents</option>
+                  <option value="name">Nom A-Z</option>
+                  <option value="status">Par statut</option>
+                </select>
+              </div>
+            )}
+
             {projects.length === 0 ? (
               <div className="client-dashboard-empty">
                 <div className="client-dashboard-empty-icon">📁</div>
                 <h3>Aucun projet pour le moment</h3>
                 <p>Vos projets apparaîtront ici dès qu'ils seront partagés avec vous.</p>
               </div>
+            ) : filteredProjects.length === 0 ? (
+              <div className="client-dashboard-empty">
+                <div className="client-dashboard-empty-icon">🔍</div>
+                <h3>Aucun résultat</h3>
+                <p>Aucun projet ne correspond à vos critères de recherche.</p>
+              </div>
             ) : (
               <div className="client-dashboard-grid">
-                {projects.map((project) => (
+                {filteredProjects.map((project) => (
                   <Link
                     key={project._id}
                     to={`/espace-client/projets/${project._id}`}

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { apiFetch } from '../../lib/api'
 import { useAuth } from '../../context/AuthContext'
 import { hasPermission, PERMISSIONS } from '../../lib/permissions'
+import { SkeletonRow } from '../../components/Skeleton'
 import type { User } from '../../types/auth.types'
 import type { Project } from '../../types/project.types'
 import type { CrmAlerts } from '../../types/crm.types'
@@ -220,7 +221,11 @@ const AdminDashboard = () => {
             <div className="admin-form-section" style={{ marginBottom: 0 }}>
               <h2>État des projets clients</h2>
               {loading ? (
-                <div className="admin-loading">Chargement des projets...</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <SkeletonRow key={i} />
+                  ))}
+                </div>
               ) : (
                 <div className="admin-table-wrapper">
                   <table className="admin-table">

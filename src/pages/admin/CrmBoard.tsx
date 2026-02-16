@@ -1,9 +1,11 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { apiFetch } from '../../lib/api'
+import { exportToCsv } from '../../lib/exportCsv'
 import { useAuth } from '../../context/AuthContext'
 import { hasPermission, PERMISSIONS } from '../../lib/permissions'
 import { CRM_SERVICE_TYPES, fromDateTimeLocal, toDateTimeLocal } from '../../lib/formatUtils'
+import ConfirmModal from '../../components/ConfirmModal'
 import type { Lead, LeadAlert, LeadFormData, PipelineColumn, AdminUser, CrmStatusConfig } from '../../types/crm.types'
 import '../espace-client/ClientPortal.css'
 import './AdminPortal.css'
@@ -270,15 +272,22 @@ const CrmBoard = () => {
   }
 
   const [converting, setConverting] = useState<string | null>(null)
+  const [convertTarget, setConvertTarget] = useState<Lead | null>(null)
 
-  const handleConvertToClient = async (lead: Lead) => {
-    if (!window.confirm(`Convertir "${lead.company}" en client ?`)) return
+  const handleConvertToClient = (lead: Lead) => {
+    setConvertTarget(lead)
+  }
+
+  const confirmConvertToClient = async () => {
+    if (!convertTarget) return
+    const lead = convertTarget
+    setConvertTarget(null)
     setError('')
     setConverting(lead._id)
     try {
       const res = await apiFetch<{ client?: { name: string } }>(`/api/admin/crm/leads/${lead._id}/convert-to-client`, { method: 'POST' })
       if (res.client) {
-        alert(`Client créé avec succès : ${res.client.name}`)
+        alert(`Client cr\u00e9\u00e9 avec succ\u00e8s : ${res.client.name}`)
         await load()
       }
     } catch (err: unknown) {
@@ -778,6 +787,29 @@ const CrmBoard = () => {
                 </svg>
               </button>
             </div>
+            <button
+              className="portal-button secondary portal-action-link"
+              type="button"
+              title="Exporter CSV"
+              onClick={() => {
+                const headers = ['Entreprise', 'Contact', 'Email', 'Statut', 'Priorite', 'Budget', 'Assigne']
+                const rows = filteredLeads.map((lead) => [
+                  lead.company || '',
+                  lead.contactName || '',
+                  lead.contactEmail || '',
+                  STATUS_MAP[lead.status]?.label || lead.status || '',
+                  PRIORITY_MAP[lead.priority || '']?.label || lead.priority || '',
+                  lead.budget != null ? String(lead.budget) : '',
+                  adminsById[lead.assignedTo || '']?.name || 'Non assigne',
+                ])
+                exportToCsv('leads.csv', headers, rows)
+              }}
+            >
+              <span className="portal-action-icon" aria-hidden>
+                <svg viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+              </span>
+              <span className="portal-action-label">Exporter CSV</span>
+            </button>
             {canManageCrm && (
               <button className="portal-button" onClick={() => setShowForm((v) => !v)}>
                 {showForm ? 'Masquer le formulaire' : '+ Nouveau lead'}
@@ -1174,6 +1206,17 @@ const CrmBoard = () => {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={convertTarget !== null}
+        title="Convertir en client"
+        message={convertTarget ? `Convertir "${convertTarget.company}" en client ?` : ''}
+        confirmLabel="Convertir"
+        cancelLabel="Annuler"
+        variant="info"
+        onConfirm={confirmConvertToClient}
+        onCancel={() => setConvertTarget(null)}
+      />
     </div>
   )
 }

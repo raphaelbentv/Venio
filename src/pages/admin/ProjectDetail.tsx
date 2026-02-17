@@ -16,6 +16,7 @@ import { useAuth } from '../../context/AuthContext'
 import { hasPermission, PERMISSIONS } from '../../lib/permissions'
 import type { Project, ProjectDocument, ProjectUpdate, ProjectSection, ProjectItem, ProjectBudget, ProjectBilling } from '../../types/project.types'
 import type { BillingDocument } from '../../types/client.types'
+import TaskBoard from '../../components/admin/TaskBoard'
 
 const BILLING_STATUS_LABELS: Record<string, string> = { DRAFT: 'Brouillon', ISSUED: 'Émis', SENT: 'Envoyé', ACCEPTED: 'Accepté', PAID: 'Payé', CANCELLED: 'Annulé' }
 
@@ -635,6 +636,12 @@ const AdminProjectDetail = () => {
           onClick={() => setActiveTab('content')}
         >
           Contenu du projet
+        </button>
+        <button
+          className={`admin-tab ${activeTab === 'tasks' ? 'active' : ''}`}
+          onClick={() => setActiveTab('tasks')}
+        >
+          Taches
         </button>
         <button
           className={`admin-tab ${activeTab === 'updates' ? 'active' : ''}`}
@@ -1469,6 +1476,12 @@ const AdminProjectDetail = () => {
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {activeTab === 'tasks' && id && (
+        <div style={{ marginTop: 24 }}>
+          <TaskBoard projectId={id} />
         </div>
       )}
 

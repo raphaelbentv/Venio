@@ -1,10 +1,15 @@
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import { isAdminRole } from '../lib/permissions'
+import NotificationBell from './admin/NotificationBell'
 import './Navbar.css'
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const location = useLocation()
+  const { user } = useAuth()
+  const showNotifBell = user && isAdminRole(user.role)
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen)
@@ -102,6 +107,8 @@ const Navbar = () => {
             </svg>
             <span className="nav-link-text">Admin</span>
           </Link>
+
+          {showNotifBell && <NotificationBell />}
         </div>
         
         <button 

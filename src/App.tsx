@@ -5,6 +5,7 @@ import Footer from './components/Footer'
 import ToastContainer from './components/ToastContainer'
 import ProtectedRoute from './components/ProtectedRoute'
 import { ToastProvider } from './context/ToastContext'
+import { NotificationProvider } from './context/NotificationContext'
 import Home from './pages/Home'
 import ServicesCommunication from './pages/ServicesCommunication'
 import ServicesDeveloppement from './pages/ServicesDeveloppement'
@@ -45,6 +46,7 @@ function App() {
   }, [])
 
   return (
+    <NotificationProvider>
     <ToastProvider>
       <Navbar />
       <Routes>
@@ -201,6 +203,7 @@ function App() {
       <Footer />
       <ToastContainer />
     </ToastProvider>
+    </NotificationProvider>
   )
 }
 

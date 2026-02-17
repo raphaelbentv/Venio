@@ -13,6 +13,7 @@ export const PERMISSIONS = {
   EDIT_CONTENT: 'edit_content',
   VIEW_BILLING: 'view_billing',
   MANAGE_BILLING: 'manage_billing',
+  MANAGE_TASKS: 'manage_tasks',
 } as const
 
 const ROLE_PERMISSIONS: Record<string, Set<string>> = {
@@ -27,6 +28,7 @@ const ROLE_PERMISSIONS: Record<string, Set<string>> = {
     PERMISSIONS.EDIT_CONTENT,
     PERMISSIONS.VIEW_BILLING,
     PERMISSIONS.MANAGE_BILLING,
+    PERMISSIONS.MANAGE_TASKS,
   ]),
   VIEWER: new Set([PERMISSIONS.VIEW_PROJECTS, PERMISSIONS.VIEW_CONTENT, PERMISSIONS.VIEW_BILLING]),
   CLIENT: new Set([]),

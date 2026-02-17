@@ -1,4 +1,5 @@
 import Lead from '../models/Lead.js'
+import Task from '../models/Task.js'
 import User from '../models/User.js'
 import CrmSettings from '../models/CrmSettings.js'
 import { ADMIN_ROLES } from './permissions.js'
@@ -10,12 +11,14 @@ import {
   getRoundRobinAssignee,
   logLeadActivity,
 } from './crmAutomations.js'
+import { createNotification } from './notifications.js'
 import {
   sendColdLeadsReminderEmail,
   sendOverdueActionsEmail,
   sendEscalationEmail,
   sendProposalReminderEmail,
   sendWeeklyReportEmail,
+  sendTaskAssignedEmail,
 } from './email.js'
 
 // Track last run times to avoid duplicate runs
@@ -25,6 +28,7 @@ const lastRunTimes = {
   escalation: null,
   proposalReminder: null,
   weeklyReport: null,
+  overdueTasks: null,
 }
 
 /**
@@ -293,6 +297,40 @@ export async function processWeeklyReport() {
 }
 
 /**
+ * Process overdue tasks and notify assignees
+ */
+export async function processOverdueTasks() {
+  try {
+    const now = new Date()
+    const overdueTasks = await Task.find({
+      dueDate: { $lt: now },
+      status: { $nin: ['TERMINE'] },
+      assignee: { $ne: null },
+    }).populate('assignee', 'name email').populate('project', 'name')
+
+    let notified = 0
+    for (const task of overdueTasks) {
+      if (!task.assignee?._id) continue
+
+      await createNotification({
+        recipient: task.assignee._id,
+        type: 'TASK_UPDATED',
+        title: 'Tâche en retard',
+        message: `"${task.title}" dans ${task.project?.name || 'un projet'} est en retard`,
+        link: `/admin/projets/${task.project?._id}?tab=tasks`,
+      }).catch(() => {})
+
+      notified++
+    }
+
+    return { processed: overdueTasks.length, notified }
+  } catch (err) {
+    console.error('Error processing overdue tasks:', err)
+    return { processed: 0, notified: 0, error: err.message }
+  }
+}
+
+/**
  * Run all scheduled jobs (call this from a cron job or interval)
  */
 export async function runScheduledJobs() {
@@ -315,10 +353,12 @@ export async function runScheduledJobs() {
         await processColdLeads()
         await processEscalations()
         await processProposalReminders()
+        await processOverdueTasks()
         lastRunTimes.overdueActions = today
         lastRunTimes.coldLeads = today
         lastRunTimes.escalation = today
         lastRunTimes.proposalReminder = today
+        lastRunTimes.overdueTasks = today
       }
     }
 

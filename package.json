@@ -12,7 +12,9 @@
     "sitemap": "node scripts/generate-sitemap.js",
     "deploy:check": "node scripts/prepare-deploy.js",
     "deploy:ionos": "npm run build:ionos && npm run deploy:check",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
@@ -22,10 +24,14 @@
     "react-router-dom": "^7.9.6"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "@vitejs/plugin-react": "^4.7.0",
+    "jsdom": "^28.1.0",
     "typescript": "^5.9.3",
-    "vite": "^5.4.21"
+    "vite": "^5.4.21",
+    "vitest": "^4.0.18"
   }
 }

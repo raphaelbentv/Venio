@@ -30,10 +30,16 @@ export interface User {
   updatedAt?: string
 }
 
+export interface LoginResult {
+  token?: string
+  user?: User | null
+  requires2FA?: boolean
+}
+
 export interface AuthContextValue {
   user: User | null
   loading: boolean
-  login: (email: string, password: string) => Promise<{ token: string; user: User | null }>
+  login: (email: string, password: string, totpCode?: string) => Promise<LoginResult>
   logout: () => void
   refreshUser: () => Promise<User | null>
 }

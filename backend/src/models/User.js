@@ -46,6 +46,9 @@ const userSchema = new mongoose.Schema(
     },
     lastContactAt: { type: Date, default: null },
     archivedAt: { type: Date, default: null },
+    // 2FA fields
+    twoFactorSecret: { type: String, default: null },
+    twoFactorEnabled: { type: Boolean, default: false },
   },
   { timestamps: true }
 )

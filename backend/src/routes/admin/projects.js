@@ -12,6 +12,9 @@ import { getNextSequence } from '../../models/Sequence.js'
 import ActivityLog from '../../models/ActivityLog.js'
 import { logActivity } from '../../lib/activityLog.js'
 import { sendClientProjectUpdateEmail, sendProjectStatusEmail } from '../../lib/email.js'
+import { generateProjectRecapPdf } from '../../lib/pdfProjectRecap.js'
+import Task from '../../models/Task.js'
+import ProjectSection from '../../models/ProjectSection.js'
 import { PERMISSIONS } from '../../lib/permissions.js'
 
 const router = express.Router()
@@ -354,6 +357,32 @@ router.post('/:id/documents', requirePermission(PERMISSIONS.EDIT_PROJECTS), uplo
     await logActivity({ project: project._id, action: 'DOCUMENT_UPLOADED', actor: req.user.id, summary: `Document uploadé : ${req.file.originalname}`, metadata: { type, filename: req.file.originalname } })
 
     return res.status(201).json({ document })
+  } catch (err) {
+    return next(err)
+  }
+})
+
+// GET /api/admin/projects/:id/recap-pdf — Télécharger le récapitulatif PDF d'un projet
+router.get('/:id/recap-pdf', requirePermission(PERMISSIONS.VIEW_PROJECTS), async (req, res, next) => {
+  try {
+    const project = await Project.findById(req.params.id)
+    if (!project) {
+      return res.status(404).json({ error: 'Projet non trouvé' })
+    }
+
+    const [client, tasks, updates, sections] = await Promise.all([
+      User.findById(project.client).select('name email').lean(),
+      Task.find({ project: project._id }).populate('assignee', 'name').sort({ status: 1, order: 1 }).lean(),
+      ProjectUpdate.find({ project: project._id }).sort({ createdAt: -1 }).lean(),
+      ProjectSection.find({ project: project._id }).sort({ order: 1 }).lean(),
+    ])
+
+    const buffer = await generateProjectRecapPdf({ project, client, tasks, updates, sections })
+
+    const safeName = project.name.replace(/[^a-zA-Z0-9àâäéèêëïîôùûüÿçœæ\s-]/gi, '').replace(/\s+/g, '_')
+    res.setHeader('Content-Type', 'application/pdf')
+    res.setHeader('Content-Disposition', `attachment; filename="Recap_${safeName}.pdf"`)
+    res.send(buffer)
   } catch (err) {
     return next(err)
   }

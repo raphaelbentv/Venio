@@ -2,7 +2,9 @@ import express from 'express'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { body, validationResult } from 'express-validator'
+import { TOTP } from 'otpauth'
 import User from '../models/User.js'
+import AuditLog from '../models/AuditLog.js'
 import { ADMIN_ROLES, getPermissionsForRole } from '../lib/permissions.js'
 import auth from '../middleware/auth.js'
 
@@ -32,15 +34,36 @@ router.post(
 
       const { email, password } = req.body
 
+      const clientIp = req.headers['x-forwarded-for'] || req.ip || ''
+      const userAgent = req.headers['user-agent'] || ''
+
       const user = await User.findOne({ email: email.toLowerCase().trim() })
       if (!user) {
+        AuditLog.create({ email, action: 'LOGIN_FAILED', ip: clientIp, userAgent, metadata: { reason: 'user_not_found' } }).catch(() => {})
         return res.status(401).json({ error: 'Identifiants invalides' })
       }
 
       const isValid = await bcrypt.compare(password, user.passwordHash)
       if (!isValid) {
+        AuditLog.create({ userId: user._id, email, action: 'LOGIN_FAILED', ip: clientIp, userAgent, metadata: { reason: 'bad_password' } }).catch(() => {})
         return res.status(401).json({ error: 'Identifiants invalides' })
       }
+
+      // Check 2FA
+      if (user.twoFactorEnabled && user.twoFactorSecret) {
+        const { totpCode } = req.body
+        if (!totpCode) {
+          return res.json({ requires2FA: true })
+        }
+        const totp = new TOTP({ issuer: 'Venio', label: user.email, algorithm: 'SHA1', digits: 6, period: 30, secret: user.twoFactorSecret })
+        const delta = totp.validate({ token: String(totpCode), window: 1 })
+        if (delta === null) {
+          AuditLog.create({ userId: user._id, email, action: 'LOGIN_FAILED', ip: clientIp, userAgent, metadata: { reason: '2fa_invalid' } }).catch(() => {})
+          return res.status(401).json({ error: 'Code 2FA invalide' })
+        }
+      }
+
+      AuditLog.create({ userId: user._id, email, action: 'LOGIN_SUCCESS', ip: clientIp, userAgent, metadata: { role: user.role } }).catch(() => {})
 
       const token = signToken(user)
       return res.json({ token })
@@ -127,6 +150,8 @@ router.post(
 
       user.passwordHash = await bcrypt.hash(newPassword, 10)
       await user.save()
+
+      AuditLog.create({ userId: user._id, email: user.email, action: 'PASSWORD_CHANGED', ip: req.headers['x-forwarded-for'] || req.ip || '', userAgent: req.headers['user-agent'] || '' }).catch(() => {})
 
       return res.json({ message: 'Mot de passe modifié avec succès' })
     } catch (err) {

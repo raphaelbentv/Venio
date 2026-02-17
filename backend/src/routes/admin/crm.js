@@ -15,6 +15,7 @@ import {
   shouldAutoQualify,
   calculateLeadScore,
   checkDuplicateLead,
+  autoCreateProjectFromLead,
 } from '../../lib/crmAutomations.js'
 import { createClientFolders } from '../../lib/nextcloud.js'
 
@@ -234,6 +235,8 @@ router.post(
     // Auto-create client account when lead is WON
     if (lead.status === 'WON') {
       await ensureClientForWonLead(lead, req.user.id, settings.activityLogging)
+      // Auto-create project from won lead (fire-and-forget)
+      autoCreateProjectFromLead(lead, req.user.id).catch(() => {})
     }
 
     return res.status(201).json({ lead })
@@ -296,6 +299,8 @@ router.patch('/leads/:id', requirePermission(PERMISSIONS.MANAGE_CRM), async (req
 
       if (payload.status === 'WON') {
         await ensureClientForWonLead(lead, req.user.id, settings.activityLogging)
+        // Auto-create project from won lead (fire-and-forget)
+        autoCreateProjectFromLead(lead, req.user.id).catch(() => {})
       }
     }
 

@@ -26,6 +26,7 @@ import type { Project, ProjectDocument, ProjectUpdate, ProjectSection, ProjectIt
 import type { BillingDocument } from '../../types/client.types'
 import TaskBoard from '../../components/admin/TaskBoard'
 import ActivityTimeline from '../../components/admin/ActivityTimeline'
+import ProjectChat from '../../components/admin/ProjectChat'
 import FileDropZone from '../../components/admin/FileDropZone'
 
 const BILLING_STATUS_LABELS: Record<string, string> = { DRAFT: 'Brouillon', ISSUED: 'Émis', SENT: 'Envoyé', ACCEPTED: 'Accepté', PAID: 'Payé', CANCELLED: 'Annulé' }
@@ -623,6 +624,36 @@ const AdminProjectDetail = () => {
                 {getStatusLabel(project.status)}
               </span>
             </div>
+            <button
+              className="admin-button secondary"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+              onClick={async () => {
+                try {
+                  const token = getToken()
+                  const res = await fetch(`/api/admin/projects/${id}/recap-pdf`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                  })
+                  if (!res.ok) throw new Error('Erreur PDF')
+                  const blob = await res.blob()
+                  const url = window.URL.createObjectURL(blob)
+                  const a = document.createElement('a')
+                  a.href = url
+                  a.download = `Recap_${project.name.replace(/\s+/g, '_')}.pdf`
+                  a.click()
+                  window.URL.revokeObjectURL(url)
+                } catch {
+                  alert('Erreur lors de la génération du PDF')
+                }
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+              </svg>
+              Récap PDF
+            </button>
           </div>
         )}
       </div>
@@ -670,6 +701,12 @@ const AdminProjectDetail = () => {
           onClick={() => setActiveTab('documents')}
         >
           Documents (ancien)
+        </button>
+        <button
+          className={`admin-tab ${activeTab === 'messages' ? 'active' : ''}`}
+          onClick={() => setActiveTab('messages')}
+        >
+          Messages
         </button>
       </div>
 
@@ -1620,6 +1657,13 @@ const AdminProjectDetail = () => {
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {activeTab === 'messages' && id && (
+        <div className="admin-form-section" style={{ marginTop: 24 }}>
+          <h2>Messages</h2>
+          <ProjectChat projectId={id} />
         </div>
       )}
     </div>

@@ -24,7 +24,13 @@ import adminDashboardRoutes from './routes/admin/dashboard.js'
 import adminSearchRoutes from './routes/admin/search.js'
 import adminTemplateRoutes from './routes/admin/templates.js'
 import adminAnalyticsRoutes from './routes/admin/analytics.js'
+import adminCalendarRoutes from './routes/admin/calendar.js'
+import adminMessageRoutes from './routes/admin/messages.js'
+import adminAuditRoutes from './routes/admin/audit.js'
+import adminTwoFactorRoutes from './routes/admin/twoFactor.js'
+import adminBackupRoutes from './routes/admin/backup.js'
 import clientProjectContentRoutes from './routes/client/projectContent.js'
+import clientMessageRoutes from './routes/client/messages.js'
 import User from './models/User.js'
 import { startScheduler } from './lib/crmScheduler.js'
 
@@ -99,9 +105,15 @@ app.use('/api/admin/dashboard', adminDashboardRoutes)
 app.use('/api/admin/search', adminSearchRoutes)
 app.use('/api/admin/templates', adminTemplateRoutes)
 app.use('/api/admin/analytics', adminAnalyticsRoutes)
+app.use('/api/admin/calendar', adminCalendarRoutes)
+app.use('/api/admin/projects', adminMessageRoutes)
+app.use('/api/admin/audit', adminAuditRoutes)
+app.use('/api/admin/2fa', adminTwoFactorRoutes)
+app.use('/api/admin/backups', adminBackupRoutes)
 
 // Routes client pour le contenu des projets
 app.use('/api/projects', clientProjectContentRoutes)
+app.use('/api/projects', clientMessageRoutes)
 
 app.use((_req, res) => {
   res.status(404).json({ error: 'Not found' })

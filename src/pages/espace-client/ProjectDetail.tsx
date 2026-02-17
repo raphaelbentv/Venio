@@ -4,6 +4,7 @@ import { useTabState } from '../../hooks/useTabState'
 import { apiFetch, getToken } from '../../lib/api'
 import type { Project, ProjectSection, ProjectItem, ProjectUpdate, ProjectDocument } from '../../types/project.types'
 import ItemCard from '../../components/ItemCard'
+import ClientProjectChat from '../../components/ClientProjectChat'
 import './ClientPortal.css'
 
 interface TaskProgress {
@@ -313,6 +314,15 @@ const ClientProjectDetail = () => {
               </svg>
               <span>Documents</span>
             </button>
+            <button
+              className={`client-project-tab ${activeTab === 'messages' ? 'active' : ''}`}
+              onClick={() => setActiveTab('messages')}
+            >
+              <svg viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" stroke="currentColor">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+              <span>Messages</span>
+            </button>
           </div>
         </>
       )}
@@ -554,6 +564,12 @@ const ClientProjectDetail = () => {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {activeTab === 'messages' && id && (
+        <div className="client-project-content">
+          <ClientProjectChat projectId={id} />
         </div>
       )}
     </div>

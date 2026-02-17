@@ -8,6 +8,8 @@ const AdminLogin = () => {
   const { user, login, logout } = useAuth()
   const navigate = useNavigate()
   const [form, setForm] = useState<{ email: string; password: string }>({ email: '', password: '' })
+  const [totpCode, setTotpCode] = useState('')
+  const [needs2FA, setNeeds2FA] = useState(false)
   const [error, setError] = useState<string>('')
   const [loading, setLoading] = useState<boolean>(false)
 
@@ -20,7 +22,12 @@ const AdminLogin = () => {
     setError('')
     setLoading(true)
     try {
-      const result = await login(form.email, form.password)
+      const result = await login(form.email, form.password, needs2FA ? totpCode : undefined)
+      if (result.requires2FA) {
+        setNeeds2FA(true)
+        setLoading(false)
+        return
+      }
       if (!result.user || !isAdminRole(result.user.role)) {
         logout()
         setError('Accès réservé aux administrateurs')
@@ -39,34 +46,62 @@ const AdminLogin = () => {
       <div className="portal-card" style={{ maxWidth: '480px', margin: '0 auto' }}>
         <h1 style={{ marginBottom: '8px' }}>Connexion Admin</h1>
         <p style={{ color: 'rgba(255, 255, 255, 0.6)', marginBottom: '24px' }}>
-          Accès réservé aux administrateurs
+          {needs2FA ? 'Entrez le code de votre application d\'authentification' : 'Accès réservé aux administrateurs'}
         </p>
         <form onSubmit={handleSubmit} className="portal-list">
-          <input
-            className="portal-input"
-            type="email"
-            placeholder="Email"
-            value={form.email}
-            onChange={(event: React.ChangeEvent<HTMLInputElement>) => setForm({ ...form, email: event.target.value })}
-            required
-          />
-          <input
-            className="portal-input"
-            type="password"
-            placeholder="Mot de passe"
-            value={form.password}
-            onChange={(event: React.ChangeEvent<HTMLInputElement>) => setForm({ ...form, password: event.target.value })}
-            required
-          />
+          {!needs2FA ? (
+            <>
+              <input
+                className="portal-input"
+                type="email"
+                placeholder="Email"
+                value={form.email}
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) => setForm({ ...form, email: event.target.value })}
+                required
+              />
+              <input
+                className="portal-input"
+                type="password"
+                placeholder="Mot de passe"
+                value={form.password}
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) => setForm({ ...form, password: event.target.value })}
+                required
+              />
+            </>
+          ) : (
+            <input
+              className="portal-input"
+              type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              placeholder="Code 2FA (6 chiffres)"
+              value={totpCode}
+              onChange={(event: React.ChangeEvent<HTMLInputElement>) => setTotpCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
+              maxLength={6}
+              required
+              autoFocus
+            />
+          )}
           {error && <div className="admin-error">{error}</div>}
           <button className="portal-button" type="submit" disabled={loading}>
-            {loading ? 'Connexion...' : 'Se connecter'}
+            {loading ? 'Connexion...' : needs2FA ? 'Vérifier' : 'Se connecter'}
           </button>
-          <p style={{ textAlign: 'center', marginTop: '16px', fontSize: '14px' }}>
-            <a href="mailto:contact@venio.fr?subject=Réinitialisation mot de passe admin" style={{ color: 'var(--primary)', textDecoration: 'none' }}>
-              Mot de passe oublié ?
-            </a>
-          </p>
+          {needs2FA && (
+            <button
+              type="button"
+              style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: '14px', marginTop: '8px' }}
+              onClick={() => { setNeeds2FA(false); setTotpCode(''); setError('') }}
+            >
+              Retour
+            </button>
+          )}
+          {!needs2FA && (
+            <p style={{ textAlign: 'center', marginTop: '16px', fontSize: '14px' }}>
+              <a href="mailto:contact@venio.fr?subject=Réinitialisation mot de passe admin" style={{ color: 'var(--primary)', textDecoration: 'none' }}>
+                Mot de passe oublié ?
+              </a>
+            </p>
+          )}
         </form>
       </div>
     </div>

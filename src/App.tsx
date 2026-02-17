@@ -1,43 +1,53 @@
-import { useEffect } from 'react'
+import { useEffect, lazy, Suspense } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import ToastContainer from './components/ToastContainer'
-import SearchModal from './components/admin/SearchModal'
 import ProtectedRoute from './components/ProtectedRoute'
 import { ToastProvider } from './context/ToastContext'
 import { NotificationProvider } from './context/NotificationContext'
-import Home from './pages/Home'
-import ServicesCommunication from './pages/ServicesCommunication'
-import ServicesDeveloppement from './pages/ServicesDeveloppement'
-import ServicesConseil from './pages/ServicesConseil'
-import PolesPage from './pages/PolesPage'
-import Realisations from './pages/Realisations'
-import APropos from './pages/APropos'
-import Contact from './pages/Contact'
-import Legal from './pages/Legal'
-import CGU from './pages/CGU'
-import ClientLogin from './pages/espace-client/Login'
-import ClientDashboard from './pages/espace-client/Dashboard'
-import ClientProjectDetail from './pages/espace-client/ProjectDetail'
-import ClientProfile from './pages/espace-client/Profile'
-import AdminLogin from './pages/admin/AdminLogin'
-import AdminDashboard from './pages/admin/AdminDashboard'
-import ClientAccountList from './pages/admin/ClientAccountList'
-import ClientAccountNew from './pages/admin/ClientAccountNew'
-import ClientAccountDetail from './pages/admin/ClientAccountDetail'
-import AdminList from './pages/admin/AdminList'
-import AdminNew from './pages/admin/AdminNew'
-import AdminEdit from './pages/admin/AdminEdit'
-import ProjectForm from './pages/admin/ProjectForm'
-import AdminProjectDetail from './pages/admin/ProjectDetail'
-import CrmBoard from './pages/admin/CrmBoard'
-import CrmSettings from './pages/admin/CrmSettings'
-import TemplateList from './pages/admin/TemplateList'
-import Analytics from './pages/admin/Analytics'
+import { ThemeProvider } from './context/ThemeContext'
+import { I18nProvider } from './context/I18nContext'
 import RequirePermission from './components/RequirePermission'
 import { ADMIN_ROLES, PERMISSIONS } from './lib/permissions'
 import './App.css'
+
+// Lazy-loaded: Site vitrine
+const Home = lazy(() => import('./pages/Home'))
+const ServicesCommunication = lazy(() => import('./pages/ServicesCommunication'))
+const ServicesDeveloppement = lazy(() => import('./pages/ServicesDeveloppement'))
+const ServicesConseil = lazy(() => import('./pages/ServicesConseil'))
+const PolesPage = lazy(() => import('./pages/PolesPage'))
+const Realisations = lazy(() => import('./pages/Realisations'))
+const APropos = lazy(() => import('./pages/APropos'))
+const Contact = lazy(() => import('./pages/Contact'))
+const Legal = lazy(() => import('./pages/Legal'))
+const CGU = lazy(() => import('./pages/CGU'))
+
+// Lazy-loaded: Espace client
+const ClientLogin = lazy(() => import('./pages/espace-client/Login'))
+const ClientDashboard = lazy(() => import('./pages/espace-client/Dashboard'))
+const ClientProjectDetail = lazy(() => import('./pages/espace-client/ProjectDetail'))
+const ClientProfile = lazy(() => import('./pages/espace-client/Profile'))
+
+// Lazy-loaded: Admin
+const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'))
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
+const ClientAccountList = lazy(() => import('./pages/admin/ClientAccountList'))
+const ClientAccountNew = lazy(() => import('./pages/admin/ClientAccountNew'))
+const ClientAccountDetail = lazy(() => import('./pages/admin/ClientAccountDetail'))
+const AdminList = lazy(() => import('./pages/admin/AdminList'))
+const AdminNew = lazy(() => import('./pages/admin/AdminNew'))
+const AdminEdit = lazy(() => import('./pages/admin/AdminEdit'))
+const ProjectForm = lazy(() => import('./pages/admin/ProjectForm'))
+const AdminProjectDetail = lazy(() => import('./pages/admin/ProjectDetail'))
+const CrmBoard = lazy(() => import('./pages/admin/CrmBoard'))
+const CrmSettings = lazy(() => import('./pages/admin/CrmSettings'))
+const TemplateList = lazy(() => import('./pages/admin/TemplateList'))
+const Analytics = lazy(() => import('./pages/admin/Analytics'))
+const Calendar = lazy(() => import('./pages/admin/Calendar'))
+const AuditLog = lazy(() => import('./pages/admin/AuditLog'))
+const SearchModal = lazy(() => import('./components/admin/SearchModal'))
 
 function App() {
   useEffect(() => {
@@ -49,9 +59,12 @@ function App() {
   }, [])
 
   return (
+    <I18nProvider>
+    <ThemeProvider>
     <NotificationProvider>
     <ToastProvider>
       <Navbar />
+      <Suspense fallback={null}>
       <Routes>
         {/* Site vitrine */}
         <Route path="/" element={<Home />} />
@@ -193,6 +206,16 @@ function App() {
           }
         />
         <Route
+          path="/admin/calendrier"
+          element={
+            <ProtectedRoute role={[...ADMIN_ROLES]} redirectTo="/admin/login">
+              <RequirePermission permission={PERMISSIONS.VIEW_PROJECTS} redirectTo="/admin">
+                <Calendar />
+              </RequirePermission>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/admin/templates"
           element={
             <ProtectedRoute role={[...ADMIN_ROLES]} redirectTo="/admin/login">
@@ -213,6 +236,16 @@ function App() {
           }
         />
         <Route
+          path="/admin/audit"
+          element={
+            <ProtectedRoute role={[...ADMIN_ROLES]} redirectTo="/admin/login">
+              <RequirePermission permission={PERMISSIONS.MANAGE_ADMINS} redirectTo="/admin">
+                <AuditLog />
+              </RequirePermission>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/admin/crm/settings"
           element={
             <ProtectedRoute role={[...ADMIN_ROLES]} redirectTo="/admin/login">
@@ -223,11 +256,16 @@ function App() {
           }
         />
       </Routes>
+      </Suspense>
       <Footer />
       <ToastContainer />
-      <SearchModal />
+      <Suspense fallback={null}>
+        <SearchModal />
+      </Suspense>
     </ToastProvider>
     </NotificationProvider>
+    </ThemeProvider>
+    </I18nProvider>
   )
 }
 

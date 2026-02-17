@@ -252,6 +252,46 @@ export function getDaysOverdue(lead) {
   return Math.floor((now - nextAction) / (1000 * 60 * 60 * 24))
 }
 
+/**
+ * Auto-create a project when a lead is won.
+ * @param {object} lead - Lead document (with company, budget, serviceType, etc.)
+ * @param {string|null} actorId - User who changed the status
+ * @returns {Promise<object|null>} Created project or null
+ */
+export async function autoCreateProjectFromLead(lead, actorId) {
+  // Dynamic import to avoid circular dependency
+  const Project = (await import('../models/Project.js')).default
+
+  // Find or create client account
+  let clientId = lead.clientAccountId
+  if (!clientId && lead.contactEmail) {
+    const existingClient = await User.findOne({ email: lead.contactEmail, role: 'CLIENT' })
+    if (existingClient) clientId = existingClient._id
+  }
+  if (!clientId) return null // Cannot create project without a client
+
+  const project = await Project.create({
+    name: `Projet — ${lead.company}`,
+    description: lead.notes || '',
+    status: 'EN_ATTENTE',
+    client: clientId,
+    priority: lead.priority || 'NORMALE',
+    serviceTypes: lead.serviceType ? [lead.serviceType] : [],
+    budget: lead.budget ? { amount: lead.budget, currency: 'EUR' } : undefined,
+    tags: ['auto-crm'],
+  })
+
+  await logLeadActivity(
+    lead._id,
+    'PROJECT_CREATED',
+    `Projet "${project.name}" créé automatiquement`,
+    { projectId: project._id },
+    actorId,
+  )
+
+  return project
+}
+
 // Helper to escape regex special characters
 function escapeRegex(string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')

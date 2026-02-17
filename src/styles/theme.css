@@ -1,0 +1,43 @@
+/* ═══════════════════════════════════════════
+   Theme Variables — Dark / Light
+   ═══════════════════════════════════════════ */
+
+[data-theme="dark"] {
+  --bg-primary: #000000;
+  --bg-secondary: #050505;
+  --bg-card: #080808;
+  --bg-card-hover: #050505;
+  --text-primary: #ffffff;
+  --text-secondary: #606060;
+  --text-muted: #404040;
+  --border-color: rgba(14, 165, 233, 0.4);
+  --neumorphism-light: rgba(255, 255, 255, 0.02);
+  --neumorphism-dark: rgba(0, 0, 0, 0.4);
+  --primary: #0ea5e9;
+  --primary-light: #7dd3fc;
+  --primary-dark: #0284c7;
+  --primary-glow: rgba(14, 165, 233, 0.8);
+  --primary-glow-strong: rgba(14, 165, 233, 1);
+  --primary-shadow: 0 0 20px rgba(14, 165, 233, 0.6);
+  --primary-shadow-strong: 0 0 40px rgba(14, 165, 233, 0.8);
+}
+
+[data-theme="light"] {
+  --bg-primary: #f5f5f7;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f0f0f2;
+  --text-primary: #1a1a2e;
+  --text-secondary: #333333;
+  --text-muted: #666666;
+  --border-color: #dddddd;
+  --neumorphism-light: rgba(255, 255, 255, 0.8);
+  --neumorphism-dark: rgba(0, 0, 0, 0.08);
+  --primary: #0ea5e9;
+  --primary-light: #0284c7;
+  --primary-dark: #0369a1;
+  --primary-glow: rgba(14, 165, 233, 0.4);
+  --primary-glow-strong: rgba(14, 165, 233, 0.6);
+  --primary-shadow: 0 0 20px rgba(14, 165, 233, 0.2);
+  --primary-shadow-strong: 0 0 40px rgba(14, 165, 233, 0.3);
+}

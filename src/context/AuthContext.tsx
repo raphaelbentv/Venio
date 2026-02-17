@@ -34,14 +34,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  const login = async (email: string, password: string) => {
-    const data = await apiFetch<{ token: string; user: User }>('/api/auth/login', {
+  const login = async (email: string, password: string, totpCode?: string) => {
+    const data = await apiFetch<{ token?: string; requires2FA?: boolean; user?: User }>('/api/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, ...(totpCode ? { totpCode } : {}) }),
     })
-    setToken(data.token)
-    const currentUser = await loadUser()
-    return { token: data.token, user: currentUser }
+    if (data.requires2FA) {
+      return { requires2FA: true }
+    }
+    if (data.token) {
+      setToken(data.token)
+      const currentUser = await loadUser()
+      return { token: data.token, user: currentUser }
+    }
+    return {}
   }
 
   const logout = () => {

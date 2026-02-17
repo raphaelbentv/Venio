@@ -161,7 +161,7 @@
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-muted);
   margin-bottom: 8px;
 }
 
@@ -255,7 +255,7 @@
 
 .admin-stat-label {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-muted);
   margin-bottom: 8px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -336,7 +336,7 @@
 
 .admin-list-item-subtitle {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
   margin: 0;
 }
 
@@ -377,7 +377,7 @@
 }
 
 .admin-tag button:hover {
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 /* Status Badges */
@@ -504,7 +504,7 @@
 .admin-empty-state {
   text-align: center;
   padding: 48px 24px;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-muted);
   background: linear-gradient(135deg, rgba(14, 165, 233, 0.05) 0%, rgba(59, 130, 246, 0.03) 100%);
   border-radius: 12px;
   border: 1px dashed rgba(14, 165, 233, 0.3);
@@ -628,14 +628,14 @@
   display: block;
   font-size: 15px;
   margin-bottom: 6px;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .admin-document-item p,
 .admin-update-item p {
   margin: 0;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
 }
 
 /* Breadcrumb */
@@ -648,7 +648,7 @@
 }
 
 .admin-breadcrumb a {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-muted);
   text-decoration: none;
   transition: all 0.3s ease;
   padding: 4px 8px;
@@ -656,7 +656,7 @@
 }
 
 .admin-breadcrumb a:hover {
-  color: #ffffff;
+  color: var(--text-primary);
   background: rgba(255, 255, 255, 0.08);
 }
 
@@ -692,7 +692,7 @@
   align-items: center;
   justify-content: center;
   padding: 48px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
   position: relative;
 }
 
@@ -752,7 +752,7 @@ input.portal-input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 
 .portal-input[type="date"]::-webkit-datetime-edit,
 .portal-input[type="datetime-local"]::-webkit-datetime-edit {
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 /* Icône calendrier blanche à droite (ProjectForm avec .project-form-field) */
@@ -802,7 +802,7 @@ div:has(> input.portal-input[type="datetime-local"])::after {
 
 .portal-input[type="file"]::file-selector-button {
   background: #1c1c1c;
-  color: #ffffff;
+  color: var(--text-primary);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 6px;
   padding: 8px 12px;
@@ -958,7 +958,7 @@ a.portal-button {
   left: 50%;
   transform: translateX(-50%);
   background: linear-gradient(135deg, rgba(30, 30, 30, 0.98) 0%, rgba(20, 20, 20, 1) 100%);
-  color: #ffffff;
+  color: var(--text-primary);
   padding: 8px 14px;
   border-radius: 8px;
   font-size: 12px;
@@ -1004,7 +1004,7 @@ a.portal-button {
 .admin-tab {
   background: transparent;
   border: none;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-muted);
   padding: 12px 20px;
   font-size: 14px;
   font-weight: 600;
@@ -1115,7 +1115,7 @@ a.portal-button {
 .project-form-section-subtitle {
   margin: 0;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
   margin-top: 4px;
 }
 
@@ -1275,7 +1275,7 @@ a.portal-button {
 
 .admin-tag button:hover {
   background: rgba(239, 68, 68, 0.3);
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 /* Deadline Row */
@@ -1415,7 +1415,7 @@ a.portal-button {
 
 .crm-column-count {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
 }
 
 .crm-card {
@@ -1454,7 +1454,7 @@ a.portal-button {
 
 .crm-card-meta {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-muted);
   margin: 0 0 8px 0;
 }
 
@@ -1531,7 +1531,7 @@ a.portal-button {
   border: none;
   border-radius: 8px;
   background: transparent;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-muted);
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -1615,7 +1615,7 @@ a.portal-button {
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-muted);
   font-size: 18px;
   cursor: pointer;
   padding: 0 4px;
@@ -1675,7 +1675,7 @@ a.portal-button {
 .crm-table-stats {
   margin-left: auto;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
   white-space: nowrap;
 }
 
@@ -1709,7 +1709,7 @@ a.portal-button {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
   background: rgba(10, 10, 10, 0.95);
   border-bottom: 1px solid rgba(14, 165, 233, 0.2);
   border-right: 1px solid rgba(255, 255, 255, 0.08);
@@ -1777,7 +1777,7 @@ a.portal-button {
 
 .crm-group-chevron {
   font-size: 10px;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-muted);
   transition: transform 0.25s ease;
   display: inline-block;
 }
@@ -1802,7 +1802,7 @@ a.portal-button {
 
 .crm-group-count {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-muted);
   margin-left: 4px;
 }
 
@@ -1873,7 +1873,7 @@ a.portal-button {
 }
 
 .crm-td-date {
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
   font-size: 12px;
 }
 
@@ -2026,7 +2026,7 @@ a.portal-button {
 
 .crm-btn-cancel-delete {
   background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -2994,14 +2994,14 @@ a.portal-button {
   padding: 2px 8px;
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .dash-task-due {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-muted);
   flex-shrink: 0;
 }
 

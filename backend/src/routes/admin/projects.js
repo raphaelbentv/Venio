@@ -9,6 +9,9 @@ import ProjectUpdate from '../../models/ProjectUpdate.js'
 import User from '../../models/User.js'
 import Document from '../../models/Document.js'
 import { getNextSequence } from '../../models/Sequence.js'
+import ActivityLog from '../../models/ActivityLog.js'
+import { logActivity } from '../../lib/activityLog.js'
+import { sendClientProjectUpdateEmail, sendProjectStatusEmail } from '../../lib/email.js'
 import { PERMISSIONS } from '../../lib/permissions.js'
 
 const router = express.Router()
@@ -79,6 +82,23 @@ router.get('/:id/documents', requirePermission(PERMISSIONS.VIEW_PROJECTS), async
   try {
     const documents = await Document.find({ project: req.params.id }).sort({ uploadedAt: -1 })
     return res.json({ documents })
+  } catch (err) {
+    return next(err)
+  }
+})
+
+// GET /api/admin/projects/:id/activity — project activity timeline
+router.get('/:id/activity', requirePermission(PERMISSIONS.VIEW_PROJECTS), async (req, res, next) => {
+  try {
+    const limit = Math.min(Number(req.query.limit) || 30, 100)
+    const before = req.query.before ? new Date(req.query.before) : null
+    const filter = { project: req.params.id }
+    if (before) filter.createdAt = { $lt: before }
+    const activities = await ActivityLog.find(filter)
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .populate('actor', 'name email')
+    return res.json({ activities })
   } catch (err) {
     return next(err)
   }
@@ -169,6 +189,8 @@ router.post('/', requirePermission(PERMISSIONS.EDIT_PROJECTS), async (req, res, 
       ...options,
     })
 
+    await logActivity({ project: project._id, action: 'PROJECT_CREATED', actor: req.user.id, summary: `Projet "${name}" créé` })
+
     return res.status(201).json({ project })
   } catch (err) {
     return next(err)
@@ -202,12 +224,40 @@ router.patch('/:id', requirePermission(PERMISSIONS.EDIT_PROJECTS), async (req, r
     if (body.reminderAt !== undefined) update.reminderAt = options.reminderAt !== undefined ? options.reminderAt : (body.reminderAt ? new Date(body.reminderAt) : null)
     if (body.billing !== undefined) update.billing = options.billing !== undefined ? options.billing : body.billing
 
+    const oldProject = await Project.findById(req.params.id)
     const project = await Project.findByIdAndUpdate(req.params.id, update, {
       new: true,
     })
     if (!project) {
       return res.status(404).json({ error: 'Project not found' })
     }
+
+    // Log activity for meaningful changes
+    if (oldProject) {
+      if (update.status && update.status !== oldProject.status) {
+        await logActivity({ project: project._id, action: 'STATUS_CHANGED', actor: req.user.id, summary: `Statut changé de ${oldProject.status} à ${update.status}`, metadata: { from: oldProject.status, to: update.status } })
+        // Email client about status change
+        const client = await User.findById(project.client)
+        if (client?.email) {
+          sendProjectStatusEmail({
+            to: client.email,
+            recipientName: client.name || client.email,
+            projectName: project.name,
+            oldStatus: oldProject.status,
+            newStatus: update.status,
+            projectId: String(project._id),
+          }).catch(() => {})
+        }
+      } else if (update.isArchived !== undefined && update.isArchived !== oldProject.isArchived) {
+        await logActivity({ project: project._id, action: update.isArchived ? 'PROJECT_ARCHIVED' : 'PROJECT_UNARCHIVED', actor: req.user.id, summary: update.isArchived ? 'Projet archivé' : 'Projet désarchivé' })
+      } else {
+        const changedFields = Object.keys(update).filter((k) => k !== 'status' && k !== 'isArchived')
+        if (changedFields.length > 0) {
+          await logActivity({ project: project._id, action: 'PROJECT_UPDATED', actor: req.user.id, summary: `Projet mis à jour (${changedFields.join(', ')})` })
+        }
+      }
+    }
+
     return res.json({ project })
   } catch (err) {
     return next(err)
@@ -244,6 +294,22 @@ router.post('/:id/updates', requirePermission(PERMISSIONS.EDIT_PROJECTS), async 
       description: description || '',
       createdBy: req.user.id,
     })
+
+    await logActivity({ project: project._id, action: 'UPDATE_POSTED', actor: req.user.id, summary: `Mise à jour : ${title}` })
+
+    // Email client about the update
+    const client = await User.findById(project.client)
+    if (client?.email) {
+      const clientBaseUrl = process.env.CLIENT_URL || 'http://localhost:5501/espace-client'
+      sendClientProjectUpdateEmail({
+        to: client.email,
+        clientName: client.name || client.email,
+        projectName: project.name,
+        updateTitle: title,
+        updateDescription: description || '',
+        projectUrl: `${clientBaseUrl}/projects/${project._id}`,
+      }).catch(() => {})
+    }
 
     return res.status(201).json({ update })
   } catch (err) {
@@ -284,6 +350,8 @@ router.post('/:id/documents', requirePermission(PERMISSIONS.EDIT_PROJECTS), uplo
       uploadedBy: req.user.id,
       uploadedAt: new Date(),
     })
+
+    await logActivity({ project: project._id, action: 'DOCUMENT_UPLOADED', actor: req.user.id, summary: `Document uploadé : ${req.file.originalname}`, metadata: { type, filename: req.file.originalname } })
 
     return res.status(201).json({ document })
   } catch (err) {

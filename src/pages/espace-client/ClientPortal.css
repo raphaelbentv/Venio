@@ -1132,3 +1132,323 @@ body.gpu-off .portal-actions-reveal:hover .portal-action-label {
     width: 85%;
   }
 }
+
+/* ========== Project Card Progress Bar (Dashboard) ========== */
+
+.client-project-card-progress {
+  margin-bottom: 16px;
+}
+
+.client-project-card-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.client-project-card-progress-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.client-project-card-progress-value {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--primary-light);
+}
+
+.client-project-card-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.client-project-card-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--primary-light));
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+/* ========== Avancement Tab ========== */
+
+.client-progress-info {
+  background: var(--bg-card);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 32px;
+}
+
+.client-progress-section-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 20px 0;
+}
+
+.client-progress-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+}
+
+.client-progress-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.client-progress-info-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.client-progress-info-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.client-progress-deadlines {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.client-progress-deadlines-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 12px 0;
+}
+
+.client-progress-deadline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.client-progress-deadline:last-child {
+  border-bottom: none;
+}
+
+.client-progress-deadline-label {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.client-progress-deadline-date {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--primary-light);
+}
+
+.client-progress-tasks {
+  background: var(--bg-card);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 32px;
+}
+
+.client-progress-bar-container {
+  margin-bottom: 24px;
+}
+
+.client-progress-bar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.client-progress-bar-label {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.client-progress-bar-count {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.client-progress-bar {
+  width: 100%;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.client-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), #4ade80);
+  border-radius: 6px;
+  transition: width 0.5s ease;
+}
+
+.client-progress-status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+}
+
+.client-progress-status-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+
+.client-progress-status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.client-progress-status-label {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  flex: 1;
+}
+
+.client-progress-status-count {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* Activity feed */
+.client-progress-activity {
+  background: var(--bg-card);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 32px;
+}
+
+.client-activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.client-activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.client-activity-item:last-child {
+  border-bottom: none;
+}
+
+.client-activity-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.client-activity-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.client-activity-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.client-activity-summary {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.55);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.client-activity-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.client-activity-actor {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.client-activity-time {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.client-activity-load-more {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.client-activity-load-more:hover {
+  background: rgba(14, 165, 233, 0.1);
+  border-color: rgba(14, 165, 233, 0.3);
+  color: var(--primary-light);
+}
+
+.client-activity-load-more:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsive for progress tab */
+@media (max-width: 768px) {
+  .client-progress-info-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .client-progress-status-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .client-activity-item {
+    flex-wrap: wrap;
+  }
+
+  .client-activity-meta {
+    flex-direction: row;
+    gap: 8px;
+    width: 100%;
+    padding-left: 38px;
+  }
+}

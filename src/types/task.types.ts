@@ -26,3 +26,13 @@ export interface TaskFormData {
   dueDate: string
   tags: string[]
 }
+
+export interface TaskComment {
+  _id: string
+  task: string
+  author: { _id: string; name: string; email: string }
+  content: string
+  mentions: { _id: string; name: string; email: string }[]
+  createdAt: string
+  updatedAt: string
+}

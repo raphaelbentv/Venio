@@ -1,0 +1,186 @@
+/* Analytics */
+.analytics-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.analytics-kpi {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.analytics-kpi-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.analytics-kpi-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+  line-height: 1.2;
+}
+
+.analytics-kpi-sub {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.analytics-charts {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-top: 24px;
+}
+
+@media (max-width: 768px) {
+  .analytics-charts {
+    grid-template-columns: 1fr;
+  }
+}
+
+.analytics-chart-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.analytics-chart-card h3 {
+  margin: 0 0 16px;
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Bar chart */
+.analytics-bar-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.analytics-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.analytics-bar-label {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  width: 80px;
+  flex-shrink: 0;
+}
+
+.analytics-bar-track {
+  flex: 1;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.analytics-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  min-width: 4px;
+  transition: width 0.5s ease;
+}
+
+.analytics-bar-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  width: 32px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* Month chart */
+.analytics-month-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  height: 160px;
+  padding-top: 20px;
+}
+
+.analytics-month-bar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  position: relative;
+  justify-content: flex-end;
+}
+
+.analytics-month-bar-inner {
+  width: 100%;
+  max-width: 48px;
+  background: rgba(99, 102, 241, 0.3);
+  border-radius: 6px 6px 0 0;
+  min-height: 4px;
+  transition: height 0.5s ease;
+}
+
+.analytics-month-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 8px;
+}
+
+.analytics-month-count {
+  position: absolute;
+  top: -4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Funnel */
+.analytics-funnel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.analytics-funnel-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.analytics-funnel-label {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  width: 80px;
+  flex-shrink: 0;
+}
+
+.analytics-funnel-bar {
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  min-width: 40px;
+  transition: width 0.5s ease;
+}
+
+.analytics-funnel-bar span {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+}

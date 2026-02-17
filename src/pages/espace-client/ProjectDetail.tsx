@@ -1,10 +1,24 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useTabState } from '../../hooks/useTabState'
 import { apiFetch, getToken } from '../../lib/api'
 import type { Project, ProjectSection, ProjectItem, ProjectUpdate, ProjectDocument } from '../../types/project.types'
 import ItemCard from '../../components/ItemCard'
 import './ClientPortal.css'
+
+interface TaskProgress {
+  total: number
+  byStatus: { A_FAIRE: number; EN_COURS: number; EN_REVIEW: number; TERMINE: number }
+  percent: number
+}
+
+interface ActivityEntry {
+  _id: string
+  action: string
+  summary: string
+  actor?: { name: string }
+  createdAt: string
+}
 
 const statusClass: Record<string, string> = {
   EN_COURS: 'client-status-active',
@@ -20,6 +34,9 @@ const ClientProjectDetail = () => {
   const [updates, setUpdates] = useState<ProjectUpdate[]>([])
   const [sections, setSections] = useState<ProjectSection[]>([])
   const [items, setItems] = useState<ProjectItem[]>([])
+  const [taskProgress, setTaskProgress] = useState<TaskProgress | null>(null)
+  const [activities, setActivities] = useState<ActivityEntry[]>([])
+  const [loadingMore, setLoadingMore] = useState(false)
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string>('')
   const [activeTab, setActiveTab] = useTabState('content')
@@ -27,16 +44,20 @@ const ClientProjectDetail = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const [projectData, sectionsData, itemsData] = await Promise.all([
+        const [projectData, sectionsData, itemsData, progressData, activityData] = await Promise.all([
           apiFetch<{ project: Project; documents?: ProjectDocument[]; updates?: ProjectUpdate[] }>(`/api/projects/${id}`),
           apiFetch<{ sections: ProjectSection[] }>(`/api/projects/${id}/sections`),
           apiFetch<{ items: ProjectItem[] }>(`/api/projects/${id}/items`),
+          apiFetch<TaskProgress>(`/api/projects/${id}/task-progress`).catch(() => null),
+          apiFetch<{ activities: ActivityEntry[] }>(`/api/projects/${id}/activity?limit=15`).catch(() => ({ activities: [] })),
         ])
         setProject(projectData.project)
         setDocuments(projectData.documents || [])
         setUpdates(projectData.updates || [])
         setSections(sectionsData.sections || [])
         setItems(itemsData.items || [])
+        if (progressData) setTaskProgress(progressData)
+        setActivities(activityData.activities || [])
       } catch (err: unknown) {
         setError((err as Error).message || 'Erreur chargement projet')
       } finally {
@@ -45,6 +66,24 @@ const ClientProjectDetail = () => {
     }
     load()
   }, [id])
+
+  const loadMoreActivities = useCallback(async () => {
+    if (activities.length === 0 || loadingMore) return
+    setLoadingMore(true)
+    try {
+      const last = activities[activities.length - 1]
+      const data = await apiFetch<{ activities: ActivityEntry[] }>(
+        `/api/projects/${id}/activity?limit=15&before=${last.createdAt}`
+      )
+      if (data.activities?.length) {
+        setActivities(prev => [...prev, ...data.activities])
+      }
+    } catch {
+      // ignore
+    } finally {
+      setLoadingMore(false)
+    }
+  }, [id, activities, loadingMore])
 
   const downloadDocument = async (doc: ProjectDocument) => {
     try {
@@ -122,6 +161,65 @@ const ClientProjectDetail = () => {
     return items.filter((item) => !item.section)
   }
 
+  const getActivityLabel = (action: string) => {
+    const labels: Record<string, string> = {
+      STATUS_CHANGED: 'Statut modifié',
+      UPDATE_POSTED: 'Mise à jour publiée',
+      DOCUMENT_UPLOADED: 'Document ajouté',
+      ITEM_CREATED: 'Élément ajouté',
+      TASK_CREATED: 'Tâche créée',
+      TASK_MOVED: 'Tâche déplacée',
+    }
+    return labels[action] || action
+  }
+
+  const getActivityIcon = (action: string) => {
+    const icons: Record<string, string> = {
+      STATUS_CHANGED: '🔄',
+      UPDATE_POSTED: '📢',
+      DOCUMENT_UPLOADED: '📎',
+      ITEM_CREATED: '➕',
+      TASK_CREATED: '✅',
+      TASK_MOVED: '📋',
+    }
+    return icons[action] || '📌'
+  }
+
+  const formatRelativeTime = (dateStr: string) => {
+    const now = new Date()
+    const date = new Date(dateStr)
+    const diffMs = now.getTime() - date.getTime()
+    const diffMin = Math.floor(diffMs / 60000)
+    if (diffMin < 1) return "À l'instant"
+    if (diffMin < 60) return `Il y a ${diffMin} min`
+    const diffH = Math.floor(diffMin / 60)
+    if (diffH < 24) return `Il y a ${diffH}h`
+    const diffD = Math.floor(diffH / 24)
+    if (diffD < 7) return `Il y a ${diffD}j`
+    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
+  }
+
+  const priorityLabels: Record<string, string> = {
+    BASSE: 'Basse',
+    NORMALE: 'Normale',
+    HAUTE: 'Haute',
+    URGENTE: 'Urgente',
+  }
+
+  const statusTaskLabels: Record<string, string> = {
+    A_FAIRE: 'À faire',
+    EN_COURS: 'En cours',
+    EN_REVIEW: 'En review',
+    TERMINE: 'Terminé',
+  }
+
+  const statusTaskColors: Record<string, string> = {
+    A_FAIRE: 'rgba(255, 255, 255, 0.4)',
+    EN_COURS: 'var(--primary-light)',
+    EN_REVIEW: '#fbbf24',
+    TERMINE: '#4ade80',
+  }
+
   return (
     <div className="portal-container client-project-detail">
       {/* Header avec breadcrumb */}
@@ -190,6 +288,17 @@ const ClientProjectDetail = () => {
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
               </svg>
               <span>Mises à jour</span>
+            </button>
+            <button
+              className={`client-project-tab ${activeTab === 'progress' ? 'active' : ''}`}
+              onClick={() => setActiveTab('progress')}
+            >
+              <svg viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" stroke="currentColor">
+                <line x1="18" y1="20" x2="18" y2="10" />
+                <line x1="12" y1="20" x2="12" y2="4" />
+                <line x1="6" y1="20" x2="6" y2="14" />
+              </svg>
+              <span>Avancement</span>
             </button>
             <button
               className={`client-project-tab ${activeTab === 'documents' ? 'active' : ''}`}
@@ -281,6 +390,124 @@ const ClientProjectDetail = () => {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'progress' && (
+        <div className="client-project-content">
+          {/* Project Info */}
+          {project && (
+            <div className="client-progress-info">
+              <h2 className="client-progress-section-title">Informations du projet</h2>
+              <div className="client-progress-info-grid">
+                {project.priority && (
+                  <div className="client-progress-info-item">
+                    <span className="client-progress-info-label">Priorité</span>
+                    <span className="client-progress-info-value">{priorityLabels[project.priority] || project.priority}</span>
+                  </div>
+                )}
+                {project.startDate && (
+                  <div className="client-progress-info-item">
+                    <span className="client-progress-info-label">Date de début</span>
+                    <span className="client-progress-info-value">
+                      {new Date(project.startDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </span>
+                  </div>
+                )}
+                {project.endDate && (
+                  <div className="client-progress-info-item">
+                    <span className="client-progress-info-label">Date de fin prévue</span>
+                    <span className="client-progress-info-value">
+                      {new Date(project.endDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </span>
+                  </div>
+                )}
+                {project.deliveredAt && (
+                  <div className="client-progress-info-item">
+                    <span className="client-progress-info-label">Livré le</span>
+                    <span className="client-progress-info-value">
+                      {new Date(project.deliveredAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </span>
+                  </div>
+                )}
+              </div>
+              {project.deadlines && project.deadlines.length > 0 && (
+                <div className="client-progress-deadlines">
+                  <h3 className="client-progress-deadlines-title">Échéances</h3>
+                  {project.deadlines.map((d, i) => (
+                    <div key={i} className="client-progress-deadline">
+                      <span className="client-progress-deadline-label">{d.label}</span>
+                      <span className="client-progress-deadline-date">
+                        {new Date(d.dueAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Task Progress */}
+          {taskProgress && taskProgress.total > 0 ? (
+            <div className="client-progress-tasks">
+              <h2 className="client-progress-section-title">Avancement des tâches</h2>
+              <div className="client-progress-bar-container">
+                <div className="client-progress-bar-header">
+                  <span className="client-progress-bar-label">{taskProgress.percent}% complété</span>
+                  <span className="client-progress-bar-count">{taskProgress.byStatus.TERMINE}/{taskProgress.total} tâches</span>
+                </div>
+                <div className="client-progress-bar">
+                  <div className="client-progress-bar-fill" style={{ width: `${taskProgress.percent}%` }} />
+                </div>
+              </div>
+              <div className="client-progress-status-grid">
+                {(['A_FAIRE', 'EN_COURS', 'EN_REVIEW', 'TERMINE'] as const).map(status => (
+                  <div key={status} className="client-progress-status-item">
+                    <div className="client-progress-status-dot" style={{ background: statusTaskColors[status] }} />
+                    <span className="client-progress-status-label">{statusTaskLabels[status]}</span>
+                    <span className="client-progress-status-count">{taskProgress.byStatus[status]}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="client-project-empty-state">
+              <div className="client-project-empty-state-icon">📊</div>
+              <h3>Pas de tâches pour le moment</h3>
+              <p>Les tâches du projet apparaîtront ici avec leur avancement.</p>
+            </div>
+          )}
+
+          {/* Activity Feed */}
+          {activities.length > 0 && (
+            <div className="client-progress-activity">
+              <h2 className="client-progress-section-title">Activité récente</h2>
+              <div className="client-activity-list">
+                {activities.map(a => (
+                  <div key={a._id} className="client-activity-item">
+                    <span className="client-activity-icon">{getActivityIcon(a.action)}</span>
+                    <div className="client-activity-content">
+                      <span className="client-activity-label">{getActivityLabel(a.action)}</span>
+                      {a.summary && <span className="client-activity-summary">{a.summary}</span>}
+                    </div>
+                    <div className="client-activity-meta">
+                      {a.actor?.name && <span className="client-activity-actor">{a.actor.name}</span>}
+                      <span className="client-activity-time">{formatRelativeTime(a.createdAt)}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {activities.length >= 15 && (
+                <button
+                  className="client-activity-load-more"
+                  onClick={loadMoreActivities}
+                  disabled={loadingMore}
+                >
+                  {loadingMore ? 'Chargement...' : 'Charger plus'}
+                </button>
+              )}
             </div>
           )}
         </div>

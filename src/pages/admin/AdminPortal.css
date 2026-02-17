@@ -2916,3 +2916,96 @@ a.portal-button {
   border: 1px solid var(--temp-color);
   white-space: nowrap;
 }
+
+/* ─────────────────────────────────────────────────────────────────
+   ENRICHED DASHBOARD
+   ───────────────────────────────────────────────────────────────── */
+
+.dash-two-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 900px) {
+  .dash-two-cols {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dash-col {
+  min-height: 0;
+}
+
+.dash-task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dash-task-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  transition: all 0.2s;
+}
+
+.dash-task-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dash-task-priority {
+  width: 4px;
+  height: 28px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.dash-task-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dash-task-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-task-project {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.dash-task-status {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.5);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.dash-task-due {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  flex-shrink: 0;
+}
+
+.dash-task-due.overdue {
+  color: #ef4444;
+  font-weight: 600;
+}

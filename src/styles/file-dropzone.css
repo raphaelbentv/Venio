@@ -1,0 +1,82 @@
+/* File Drop Zone */
+.file-dropzone {
+  border: 2px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.file-dropzone:hover {
+  border-color: rgba(99, 102, 241, 0.3);
+  background: rgba(99, 102, 241, 0.04);
+}
+
+.file-dropzone-active {
+  border-color: rgba(99, 102, 241, 0.5);
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.file-dropzone-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.file-dropzone-placeholder svg {
+  opacity: 0.5;
+}
+
+.file-dropzone-placeholder p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.file-dropzone-limit {
+  font-size: 12px;
+  opacity: 0.5;
+}
+
+.file-dropzone-preview {
+  margin-bottom: 12px;
+}
+
+.file-dropzone-preview img {
+  max-width: 200px;
+  max-height: 120px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.file-dropzone-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.file-dropzone-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 300px;
+}
+
+.file-dropzone-size {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+  flex-shrink: 0;
+}
+
+.file-dropzone-error {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #ef4444;
+}

@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import ToastContainer from './components/ToastContainer'
+import SearchModal from './components/admin/SearchModal'
 import ProtectedRoute from './components/ProtectedRoute'
 import { ToastProvider } from './context/ToastContext'
 import { NotificationProvider } from './context/NotificationContext'
@@ -32,6 +33,8 @@ import ProjectForm from './pages/admin/ProjectForm'
 import AdminProjectDetail from './pages/admin/ProjectDetail'
 import CrmBoard from './pages/admin/CrmBoard'
 import CrmSettings from './pages/admin/CrmSettings'
+import TemplateList from './pages/admin/TemplateList'
+import Analytics from './pages/admin/Analytics'
 import RequirePermission from './components/RequirePermission'
 import { ADMIN_ROLES, PERMISSIONS } from './lib/permissions'
 import './App.css'
@@ -180,6 +183,26 @@ function App() {
           }
         />
         <Route
+          path="/admin/analytics"
+          element={
+            <ProtectedRoute role={[...ADMIN_ROLES]} redirectTo="/admin/login">
+              <RequirePermission permission={PERMISSIONS.VIEW_PROJECTS} redirectTo="/admin">
+                <Analytics />
+              </RequirePermission>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/templates"
+          element={
+            <ProtectedRoute role={[...ADMIN_ROLES]} redirectTo="/admin/login">
+              <RequirePermission permission={PERMISSIONS.EDIT_PROJECTS} redirectTo="/admin">
+                <TemplateList />
+              </RequirePermission>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/admin/crm"
           element={
             <ProtectedRoute role={[...ADMIN_ROLES]} redirectTo="/admin/login">
@@ -202,6 +225,7 @@ function App() {
       </Routes>
       <Footer />
       <ToastContainer />
+      <SearchModal />
     </ToastProvider>
     </NotificationProvider>
   )

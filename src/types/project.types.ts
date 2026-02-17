@@ -74,7 +74,7 @@ export interface ProjectItem {
   isDownloadable: boolean
   status?: string
   section?: { _id: string } | string
-  file?: { originalName: string; path?: string }
+  file?: { originalName: string; path?: string; mimeType?: string; size?: number }
 }
 
 export interface ProjectDocument {

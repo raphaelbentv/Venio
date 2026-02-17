@@ -2,9 +2,9 @@ import React, { useEffect, useState, useCallback } from 'react'
 import { apiFetch } from '../../lib/api'
 import { useAuth } from '../../context/AuthContext'
 import { hasPermission, PERMISSIONS } from '../../lib/permissions'
-import { fetchTasks, createTask, updateTask, moveTask, deleteTask } from '../../services/adminTasks'
+import { fetchTasks, createTask, updateTask, moveTask, deleteTask, fetchComments, addComment, deleteComment } from '../../services/adminTasks'
 import ConfirmModal from '../ConfirmModal'
-import type { Task, TaskStatus, TaskPriority } from '../../types/task.types'
+import type { Task, TaskStatus, TaskPriority, TaskComment } from '../../types/task.types'
 import type { AdminUser } from '../../types/crm.types'
 import '../../styles/task-board.css'
 
@@ -46,6 +46,9 @@ const TaskBoard = ({ projectId }: TaskBoardProps) => {
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const [form, setForm] = useState(emptyForm)
+  const [comments, setComments] = useState<TaskComment[]>([])
+  const [commentText, setCommentText] = useState('')
+  const [commentLoading, setCommentLoading] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -98,7 +101,7 @@ const TaskBoard = ({ projectId }: TaskBoardProps) => {
     setShowModal(true)
   }
 
-  const openEditModal = (task: Task) => {
+  const openEditModal = async (task: Task) => {
     setEditingTask(task)
     setForm({
       title: task.title,
@@ -109,6 +112,14 @@ const TaskBoard = ({ projectId }: TaskBoardProps) => {
       status: task.status,
     })
     setShowModal(true)
+    setComments([])
+    setCommentText('')
+    try {
+      const cmts = await fetchComments(projectId, task._id)
+      setComments(cmts)
+    } catch {
+      // silently fail
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -145,6 +156,48 @@ const TaskBoard = ({ projectId }: TaskBoardProps) => {
     } catch (err: unknown) {
       setError((err as Error).message || 'Erreur suppression')
     }
+  }
+
+  const handleAddComment = async () => {
+    if (!commentText.trim() || !editingTask) return
+    setCommentLoading(true)
+    try {
+      // Extract @mentions from text — match admin names
+      const mentionIds: string[] = []
+      for (const admin of admins) {
+        if (commentText.includes(`@${admin.name}`)) {
+          mentionIds.push(admin._id)
+        }
+      }
+      const newComment = await addComment(projectId, editingTask._id, commentText, mentionIds)
+      setComments((prev) => [...prev, newComment])
+      setCommentText('')
+    } catch (err: unknown) {
+      setError((err as Error).message || 'Erreur ajout commentaire')
+    } finally {
+      setCommentLoading(false)
+    }
+  }
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (!editingTask) return
+    try {
+      await deleteComment(projectId, editingTask._id, commentId)
+      setComments((prev) => prev.filter((c) => c._id !== commentId))
+    } catch (err: unknown) {
+      setError((err as Error).message || 'Erreur suppression commentaire')
+    }
+  }
+
+  const formatTimeAgo = (dateStr: string) => {
+    const diff = Date.now() - new Date(dateStr).getTime()
+    const minutes = Math.floor(diff / 60000)
+    if (minutes < 1) return "a l'instant"
+    if (minutes < 60) return `il y a ${minutes}min`
+    const hours = Math.floor(minutes / 60)
+    if (hours < 24) return `il y a ${hours}h`
+    const days = Math.floor(hours / 24)
+    return `il y a ${days}j`
   }
 
   const formatDate = (date: string | null) => {
@@ -317,6 +370,65 @@ const TaskBoard = ({ projectId }: TaskBoardProps) => {
                 </button>
               </div>
             </form>
+
+            {/* Comment thread — only in edit mode */}
+            {editingTask && (
+              <div className="task-comments-section">
+                <h4 className="task-comments-title">Commentaires ({comments.length})</h4>
+                <div className="task-comments-list">
+                  {comments.length === 0 && (
+                    <p className="task-comments-empty">Aucun commentaire</p>
+                  )}
+                  {comments.map((comment) => (
+                    <div key={comment._id} className="task-comment">
+                      <div className="task-comment-header">
+                        <span className="task-comment-author">{comment.author.name}</span>
+                        <span className="task-comment-time">{formatTimeAgo(comment.createdAt)}</span>
+                        {(comment.author._id === user?._id || user?.role === 'SUPER_ADMIN') && (
+                          <button
+                            className="task-comment-delete"
+                            onClick={() => handleDeleteComment(comment._id)}
+                          >
+                            x
+                          </button>
+                        )}
+                      </div>
+                      <p className="task-comment-content">{comment.content}</p>
+                      {comment.mentions.length > 0 && (
+                        <div className="task-comment-mentions">
+                          {comment.mentions.map((m) => (
+                            <span key={m._id} className="task-mention-badge">@{m.name}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                {canManage && (
+                  <div className="task-comment-input">
+                    <textarea
+                      value={commentText}
+                      onChange={(e) => setCommentText(e.target.value)}
+                      placeholder={`Ecrire un commentaire... (utilisez @nom pour mentionner)`}
+                      rows={2}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault()
+                          handleAddComment()
+                        }
+                      }}
+                    />
+                    <button
+                      className="portal-btn"
+                      onClick={handleAddComment}
+                      disabled={commentLoading || !commentText.trim()}
+                    >
+                      Envoyer
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

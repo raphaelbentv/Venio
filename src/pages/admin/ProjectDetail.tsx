@@ -2,6 +2,14 @@ import React, { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useTabState } from '../../hooks/useTabState'
 import { apiFetch, getToken } from '../../lib/api'
+
+function isImageMime(mime?: string): boolean {
+  return !!mime && mime.startsWith('image/')
+}
+
+function getPreviewUrl(projectId: string, itemId: string): string {
+  return `/api/admin/projects/${projectId}/items/${itemId}/preview`
+}
 import {
   formatCurrency,
   parseCurrency,
@@ -17,6 +25,8 @@ import { hasPermission, PERMISSIONS } from '../../lib/permissions'
 import type { Project, ProjectDocument, ProjectUpdate, ProjectSection, ProjectItem, ProjectBudget, ProjectBilling } from '../../types/project.types'
 import type { BillingDocument } from '../../types/client.types'
 import TaskBoard from '../../components/admin/TaskBoard'
+import ActivityTimeline from '../../components/admin/ActivityTimeline'
+import FileDropZone from '../../components/admin/FileDropZone'
 
 const BILLING_STATUS_LABELS: Record<string, string> = { DRAFT: 'Brouillon', ISSUED: 'Émis', SENT: 'Envoyé', ACCEPTED: 'Accepté', PAID: 'Payé', CANCELLED: 'Annulé' }
 
@@ -642,6 +652,12 @@ const AdminProjectDetail = () => {
           onClick={() => setActiveTab('tasks')}
         >
           Taches
+        </button>
+        <button
+          className={`admin-tab ${activeTab === 'activity' ? 'active' : ''}`}
+          onClick={() => setActiveTab('activity')}
+        >
+          Activite
         </button>
         <button
           className={`admin-tab ${activeTab === 'updates' ? 'active' : ''}`}
@@ -1295,11 +1311,9 @@ const AdminProjectDetail = () => {
                   <option value="VALIDE">Validé</option>
                 </select>
               )}
-              <input
-                className="portal-input"
-                type="file"
-                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                style={{ padding: '8px 14px' }}
+              <FileDropZone
+                onFile={(file) => setSelectedFile(file)}
+                currentFile={selectedFile}
               />
               <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
@@ -1337,14 +1351,22 @@ const AdminProjectDetail = () => {
                 <div className="admin-list">
                   {getItemsWithoutSection().map((item) => (
                     <div key={item._id} className="admin-list-item">
+                      {item.file && isImageMime(item.file.mimeType) && id && (
+                        <img
+                          src={getPreviewUrl(id, item._id)}
+                          alt={item.title}
+                          style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 6, flexShrink: 0 }}
+                          loading="lazy"
+                        />
+                      )}
                       <div className="admin-list-item-content">
                         <h4 className="admin-list-item-title">
                           {item.title}
-                          {!item.isVisible && <span style={{ marginLeft: '8px', opacity: 0.5 }}>👁️ Masqué</span>}
+                          {!item.isVisible && <span style={{ marginLeft: '8px', opacity: 0.5 }}>Masque</span>}
                         </h4>
                         <p className="admin-list-item-subtitle">
                           <span className="admin-badge">{getItemTypeLabel(item.type)}</span>
-                          {item.file && <span style={{ marginLeft: '8px' }}>📎 {item.file.originalName}</span>}
+                          {item.file && <span style={{ marginLeft: '8px' }}>{item.file.originalName} ({item.file.size ? `${(item.file.size / 1024).toFixed(0)} Ko` : ''})</span>}
                         </p>
                       </div>
                       <div className="admin-list-item-actions">
@@ -1354,7 +1376,7 @@ const AdminProjectDetail = () => {
                             onClick={() => handleToggleItemVisibility(item)}
                             style={{ fontSize: '12px', padding: '8px 12px' }}
                           >
-                            {item.isVisible ? '👁️ Masquer' : '👁️ Afficher'}
+                            {item.isVisible ? 'Masquer' : 'Afficher'}
                           </button>
                         )}
                         {canViewContent && item.file && (
@@ -1363,7 +1385,7 @@ const AdminProjectDetail = () => {
                             onClick={() => handleDownloadItem(item._id, item.file!.originalName)}
                             style={{ fontSize: '12px', padding: '8px 12px' }}
                           >
-                            📥
+                            Telecharger
                           </button>
                         )}
                         {canEditContent && (
@@ -1372,7 +1394,7 @@ const AdminProjectDetail = () => {
                             onClick={() => handleDeleteItem(item._id)}
                             style={{ fontSize: '12px', padding: '8px 12px', background: 'rgba(239, 68, 68, 0.1)', borderColor: 'rgba(239, 68, 68, 0.3)' }}
                           >
-                            🗑️
+                            Supprimer
                           </button>
                         )}
                       </div>
@@ -1482,6 +1504,13 @@ const AdminProjectDetail = () => {
       {activeTab === 'tasks' && id && (
         <div style={{ marginTop: 24 }}>
           <TaskBoard projectId={id} />
+        </div>
+      )}
+
+      {activeTab === 'activity' && id && (
+        <div className="admin-form-section" style={{ marginTop: 24 }}>
+          <h2>Activite du projet</h2>
+          <ActivityTimeline projectId={id} />
         </div>
       )}
 

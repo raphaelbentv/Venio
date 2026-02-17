@@ -417,6 +417,148 @@ export async function sendWeeklyReportEmail({ to, stats }) {
   }
 }
 
+/**
+ * Envoie un email de notification d'assignation de tâche.
+ * @param {{ to: string, assigneeName: string, taskTitle: string, projectName: string, projectId: string, assignedBy: string }} opts
+ * @returns {Promise<{ sent: boolean, error?: string }>}
+ */
+export async function sendTaskAssignedEmail({ to, assigneeName, taskTitle, projectName, projectId, assignedBy }) {
+  const transporter = getTransporter()
+  if (!transporter) {
+    return { sent: false, error: 'SMTP non configuré (SMTP_USER / SMTP_PASS)' }
+  }
+  const from = process.env.SMTP_FROM || process.env.SMTP_USER || 'admin@venio.paris'
+  const appName = process.env.APP_NAME || 'Venio'
+  const baseUrl = process.env.ADMIN_LOGIN_URL ? process.env.ADMIN_LOGIN_URL.replace('/login', '') : 'http://localhost:5501/admin'
+  const projectUrl = `${baseUrl}/projects/${projectId}?tab=tasks`
+
+  try {
+    await transporter.sendMail({
+      from: `"${appName}" <${from}>`,
+      to,
+      subject: `[${appName}] Tâche assignée : ${taskTitle}`,
+      text: [
+        `Bonjour ${assigneeName},`,
+        '',
+        `${assignedBy} vous a assigné une nouvelle tâche sur le projet "${projectName}" :`,
+        '',
+        `  Tâche : ${taskTitle}`,
+        '',
+        `Voir la tâche : ${projectUrl}`,
+        '',
+        `— L'équipe ${appName}`,
+      ].join('\n'),
+      html: [
+        `<p>Bonjour ${escapeHtml(assigneeName)},</p>`,
+        `<p><strong>${escapeHtml(assignedBy)}</strong> vous a assigné une nouvelle tâche sur le projet <strong>${escapeHtml(projectName)}</strong> :</p>`,
+        `<div style="margin: 16px 0; padding: 16px; background: #f8fafc; border-left: 4px solid #6366f1; border-radius: 4px;">`,
+        `<p style="margin: 0; font-weight: 600;">${escapeHtml(taskTitle)}</p>`,
+        `</div>`,
+        `<p><a href="${escapeHtml(projectUrl)}" style="display: inline-block; padding: 10px 20px; background: #6366f1; color: white; text-decoration: none; border-radius: 6px;">Voir la tâche</a></p>`,
+        `<p>— L'équipe ${escapeHtml(appName)}</p>`,
+      ].join(''),
+    })
+    return { sent: true }
+  } catch (err) {
+    return { sent: false, error: err.message || String(err) }
+  }
+}
+
+/**
+ * Envoie un email au client pour une mise à jour de projet.
+ * @param {{ to: string, clientName: string, projectName: string, updateTitle: string, updateDescription: string, projectUrl: string }} opts
+ * @returns {Promise<{ sent: boolean, error?: string }>}
+ */
+export async function sendClientProjectUpdateEmail({ to, clientName, projectName, updateTitle, updateDescription, projectUrl }) {
+  const transporter = getTransporter()
+  if (!transporter) {
+    return { sent: false, error: 'SMTP non configuré (SMTP_USER / SMTP_PASS)' }
+  }
+  const from = process.env.SMTP_FROM || process.env.SMTP_USER || 'admin@venio.paris'
+  const appName = process.env.APP_NAME || 'Venio'
+
+  try {
+    await transporter.sendMail({
+      from: `"${appName}" <${from}>`,
+      to,
+      subject: `[${appName}] Mise à jour sur votre projet : ${projectName}`,
+      text: [
+        `Bonjour ${clientName},`,
+        '',
+        `Votre projet "${projectName}" a été mis à jour :`,
+        '',
+        `${updateTitle}`,
+        updateDescription ? `\n${updateDescription}` : '',
+        '',
+        `Consulter votre espace : ${projectUrl}`,
+        '',
+        `— L'équipe ${appName}`,
+      ].join('\n'),
+      html: [
+        `<p>Bonjour ${escapeHtml(clientName)},</p>`,
+        `<p>Votre projet <strong>${escapeHtml(projectName)}</strong> a été mis à jour :</p>`,
+        `<div style="margin: 16px 0; padding: 16px; background: #f0fdf4; border-left: 4px solid #22c55e; border-radius: 4px;">`,
+        `<p style="margin: 0 0 4px; font-weight: 600;">${escapeHtml(updateTitle)}</p>`,
+        updateDescription ? `<p style="margin: 0; color: #666;">${escapeHtml(updateDescription)}</p>` : '',
+        `</div>`,
+        `<p><a href="${escapeHtml(projectUrl)}" style="display: inline-block; padding: 10px 20px; background: #22c55e; color: white; text-decoration: none; border-radius: 6px;">Voir mon projet</a></p>`,
+        `<p>— L'équipe ${escapeHtml(appName)}</p>`,
+      ].join(''),
+    })
+    return { sent: true }
+  } catch (err) {
+    return { sent: false, error: err.message || String(err) }
+  }
+}
+
+/**
+ * Envoie un email de changement de statut projet.
+ * @param {{ to: string, recipientName: string, projectName: string, oldStatus: string, newStatus: string, projectId: string }} opts
+ * @returns {Promise<{ sent: boolean, error?: string }>}
+ */
+export async function sendProjectStatusEmail({ to, recipientName, projectName, oldStatus, newStatus, projectId }) {
+  const transporter = getTransporter()
+  if (!transporter) {
+    return { sent: false, error: 'SMTP non configuré (SMTP_USER / SMTP_PASS)' }
+  }
+  const from = process.env.SMTP_FROM || process.env.SMTP_USER || 'admin@venio.paris'
+  const appName = process.env.APP_NAME || 'Venio'
+  const baseUrl = process.env.ADMIN_LOGIN_URL ? process.env.ADMIN_LOGIN_URL.replace('/login', '') : 'http://localhost:5501/admin'
+  const projectUrl = `${baseUrl}/projects/${projectId}`
+
+  const STATUS_LABELS = { EN_COURS: 'En cours', EN_ATTENTE: 'En attente', TERMINE: 'Terminé' }
+
+  try {
+    await transporter.sendMail({
+      from: `"${appName}" <${from}>`,
+      to,
+      subject: `[${appName}] Projet "${projectName}" — ${STATUS_LABELS[newStatus] || newStatus}`,
+      text: [
+        `Bonjour ${recipientName},`,
+        '',
+        `Le statut du projet "${projectName}" a changé :`,
+        `  ${STATUS_LABELS[oldStatus] || oldStatus} → ${STATUS_LABELS[newStatus] || newStatus}`,
+        '',
+        `Voir le projet : ${projectUrl}`,
+        '',
+        `— L'équipe ${appName}`,
+      ].join('\n'),
+      html: [
+        `<p>Bonjour ${escapeHtml(recipientName)},</p>`,
+        `<p>Le statut du projet <strong>${escapeHtml(projectName)}</strong> a changé :</p>`,
+        `<div style="margin: 16px 0; padding: 16px; background: #fffbeb; border-left: 4px solid #f59e0b; border-radius: 4px;">`,
+        `<p style="margin: 0;"><span style="color: #666;">${escapeHtml(STATUS_LABELS[oldStatus] || oldStatus)}</span> → <strong>${escapeHtml(STATUS_LABELS[newStatus] || newStatus)}</strong></p>`,
+        `</div>`,
+        `<p><a href="${escapeHtml(projectUrl)}" style="display: inline-block; padding: 10px 20px; background: #f59e0b; color: white; text-decoration: none; border-radius: 6px;">Voir le projet</a></p>`,
+        `<p>— L'équipe ${escapeHtml(appName)}</p>`,
+      ].join(''),
+    })
+    return { sent: true }
+  } catch (err) {
+    return { sent: false, error: err.message || String(err) }
+  }
+}
+
 function escapeHtml(s) {
   if (s == null) return ''
   return String(s)

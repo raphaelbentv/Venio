@@ -3,9 +3,13 @@ import { body, validationResult } from 'express-validator'
 import auth from '../../middleware/auth.js'
 import { requireAdmin, requirePermission } from '../../middleware/role.js'
 import Task from '../../models/Task.js'
+import TaskComment from '../../models/TaskComment.js'
 import Project from '../../models/Project.js'
 import { PERMISSIONS } from '../../lib/permissions.js'
 import { createNotification } from '../../lib/notifications.js'
+import { logActivity } from '../../lib/activityLog.js'
+import { sendTaskAssignedEmail } from '../../lib/email.js'
+import User from '../../models/User.js'
 
 const router = express.Router()
 
@@ -78,6 +82,8 @@ router.post(
       await task.populate('assignee', 'name email')
       await task.populate('createdBy', 'name email')
 
+      await logActivity({ project: projectId, action: 'TASK_CREATED', actor: req.user.id, summary: `Tâche créée : ${title}`, metadata: { taskId: task._id, title } })
+
       // Notify assignee if set and different from creator
       if (assignee && String(assignee) !== String(req.user.id)) {
         await createNotification({
@@ -87,6 +93,18 @@ router.post(
           message: `Vous avez été assigné à la tâche "${title}" sur le projet "${project.name}"`,
           link: `/admin/projects/${projectId}?tab=tasks`,
         })
+        // Send email
+        const assigneeUser = await User.findById(assignee)
+        if (assigneeUser?.email) {
+          sendTaskAssignedEmail({
+            to: assigneeUser.email,
+            assigneeName: assigneeUser.name || assigneeUser.email,
+            taskTitle: title,
+            projectName: project.name,
+            projectId,
+            assignedBy: req.user.name || 'Un administrateur',
+          }).catch(() => {})
+        }
       }
 
       return res.status(201).json({ task })
@@ -131,6 +149,8 @@ router.patch(
       await task.populate('assignee', 'name email')
       await task.populate('createdBy', 'name email')
 
+      await logActivity({ project: projectId, action: 'TASK_UPDATED', actor: req.user.id, summary: `Tâche modifiée : ${task.title}`, metadata: { taskId: task._id } })
+
       // Notify new assignee if changed
       const newAssignee = task.assignee ? String(task.assignee._id || task.assignee) : null
       if (newAssignee && newAssignee !== oldAssignee && newAssignee !== String(req.user.id)) {
@@ -142,6 +162,17 @@ router.patch(
           message: `Vous avez été assigné à la tâche "${task.title}" sur le projet "${project?.name || ''}"`,
           link: `/admin/projects/${projectId}?tab=tasks`,
         })
+        const assigneeUser = await User.findById(newAssignee)
+        if (assigneeUser?.email) {
+          sendTaskAssignedEmail({
+            to: assigneeUser.email,
+            assigneeName: assigneeUser.name || assigneeUser.email,
+            taskTitle: task.title,
+            projectName: project?.name || '',
+            projectId,
+            assignedBy: req.user.name || 'Un administrateur',
+          }).catch(() => {})
+        }
       }
 
       return res.json({ task })
@@ -166,11 +197,16 @@ router.patch('/:projectId/tasks/:taskId/move', requirePermission(PERMISSIONS.MAN
       return res.status(404).json({ error: 'Tâche non trouvée' })
     }
 
+    const oldStatus = task.status
     task.status = status
     task.order = typeof order === 'number' ? order : 0
     await task.save()
     await task.populate('assignee', 'name email')
     await task.populate('createdBy', 'name email')
+
+    if (oldStatus !== status) {
+      await logActivity({ project: projectId, action: 'TASK_MOVED', actor: req.user.id, summary: `Tâche "${task.title}" déplacée de ${oldStatus} à ${status}`, metadata: { taskId: task._id, from: oldStatus, to: status } })
+    }
 
     return res.json({ task })
   } catch (err) {
@@ -186,6 +222,114 @@ router.delete('/:projectId/tasks/:taskId', requirePermission(PERMISSIONS.MANAGE_
     if (!task) {
       return res.status(404).json({ error: 'Tâche non trouvée' })
     }
+
+    await logActivity({ project: projectId, action: 'TASK_DELETED', actor: req.user.id, summary: `Tâche supprimée : ${task.title}` })
+
+    return res.json({ success: true })
+  } catch (err) {
+    return next(err)
+  }
+})
+
+// ─── Task Comments ───
+
+// GET /api/admin/projects/:projectId/tasks/:taskId/comments
+router.get('/:projectId/tasks/:taskId/comments', requirePermission(PERMISSIONS.VIEW_PROJECTS), async (req, res, next) => {
+  try {
+    const { projectId, taskId } = req.params
+    const task = await Task.findOne({ _id: taskId, project: projectId })
+    if (!task) {
+      return res.status(404).json({ error: 'Tâche non trouvée' })
+    }
+    const comments = await TaskComment.find({ task: taskId })
+      .sort({ createdAt: 1 })
+      .populate('author', 'name email')
+      .populate('mentions', 'name email')
+    return res.json({ comments })
+  } catch (err) {
+    return next(err)
+  }
+})
+
+// POST /api/admin/projects/:projectId/tasks/:taskId/comments
+router.post(
+  '/:projectId/tasks/:taskId/comments',
+  requirePermission(PERMISSIONS.MANAGE_TASKS),
+  body('content').trim().notEmpty().withMessage('Le commentaire ne peut pas être vide'),
+  async (req, res, next) => {
+    try {
+      const errors = validationResult(req)
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ error: errors.array()[0].msg, errors: errors.array() })
+      }
+
+      const { projectId, taskId } = req.params
+      const task = await Task.findOne({ _id: taskId, project: projectId })
+      if (!task) {
+        return res.status(404).json({ error: 'Tâche non trouvée' })
+      }
+
+      const { content, mentions } = req.body
+      const comment = await TaskComment.create({
+        task: taskId,
+        author: req.user.id,
+        content,
+        mentions: Array.isArray(mentions) ? mentions : [],
+      })
+
+      await comment.populate('author', 'name email')
+      await comment.populate('mentions', 'name email')
+
+      // Notify mentioned users
+      const project = await Project.findById(projectId)
+      if (Array.isArray(mentions) && mentions.length > 0) {
+        for (const userId of mentions) {
+          if (String(userId) !== String(req.user.id)) {
+            await createNotification({
+              recipient: userId,
+              type: 'TASK_UPDATED',
+              title: `Mention dans "${task.title}"`,
+              message: `${req.user.name || 'Un collègue'} vous a mentionné dans un commentaire`,
+              link: `/admin/projects/${projectId}?tab=tasks`,
+            })
+          }
+        }
+      }
+
+      // Notify task assignee if different from commenter
+      if (task.assignee && String(task.assignee) !== String(req.user.id)) {
+        const isMentioned = Array.isArray(mentions) && mentions.some((m) => String(m) === String(task.assignee))
+        if (!isMentioned) {
+          await createNotification({
+            recipient: task.assignee,
+            type: 'TASK_UPDATED',
+            title: `Nouveau commentaire sur "${task.title}"`,
+            message: `${req.user.name || 'Un collègue'} a commenté la tâche "${task.title}" sur "${project?.name || ''}"`,
+            link: `/admin/projects/${projectId}?tab=tasks`,
+          })
+        }
+      }
+
+      return res.status(201).json({ comment })
+    } catch (err) {
+      return next(err)
+    }
+  }
+)
+
+// DELETE /api/admin/projects/:projectId/tasks/:taskId/comments/:commentId
+router.delete('/:projectId/tasks/:taskId/comments/:commentId', requirePermission(PERMISSIONS.MANAGE_TASKS), async (req, res, next) => {
+  try {
+    const { taskId, commentId } = req.params
+    const comment = await TaskComment.findOne({ _id: commentId, task: taskId })
+    if (!comment) {
+      return res.status(404).json({ error: 'Commentaire non trouvé' })
+    }
+    // Only author or super admin can delete
+    if (String(comment.author) !== String(req.user.id) && req.user.role !== 'SUPER_ADMIN') {
+      return res.status(403).json({ error: 'Non autorisé' })
+    }
+    await comment.deleteOne()
     return res.json({ success: true })
   } catch (err) {
     return next(err)

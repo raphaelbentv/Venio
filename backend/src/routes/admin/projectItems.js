@@ -255,4 +255,25 @@ router.get('/:projectId/items/:itemId/download', requirePermission(PERMISSIONS.V
   }
 })
 
+// GET /api/admin/projects/:projectId/items/:itemId/preview — inline preview for images/PDFs
+router.get('/:projectId/items/:itemId/preview', requirePermission(PERMISSIONS.VIEW_CONTENT), async (req, res) => {
+  try {
+    const { projectId, itemId } = req.params
+    const item = await ProjectItem.findOne({ _id: itemId, project: projectId })
+    if (!item || !item.file?.storagePath) {
+      return res.status(404).json({ error: 'Fichier non trouvé' })
+    }
+    if (!fs.existsSync(item.file.storagePath)) {
+      return res.status(404).json({ error: 'Fichier introuvable' })
+    }
+    res.setHeader('Content-Type', item.file.mimeType || 'application/octet-stream')
+    res.setHeader('Content-Disposition', 'inline')
+    const stream = fs.createReadStream(item.file.storagePath)
+    stream.pipe(res)
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: 'Erreur serveur' })
+  }
+})
+
 export default router

@@ -12,6 +12,8 @@ import {
 } from '../../lib/formatUtils'
 import type { User } from '../../types/auth.types'
 import type { Project } from '../../types/project.types'
+import type { ProjectTemplate } from '../../types/template.types'
+import { fetchTemplates } from '../../services/templates'
 import '../espace-client/ClientPortal.css'
 import './AdminPortal.css'
 
@@ -65,19 +67,38 @@ const ProjectForm = () => {
   const [serviceTypeInput, setServiceTypeInput] = useState<string>('')
   const [deliverableTypeInput, setDeliverableTypeInput] = useState<string>('')
   const [tagInput, setTagInput] = useState<string>('')
+  const [templates, setTemplates] = useState<ProjectTemplate[]>([])
   const [error, setError] = useState<string>('')
 
   useEffect(() => {
     const load = async () => {
       try {
-        const data = await apiFetch<{ users?: User[] }>('/api/admin/users?role=CLIENT')
-        setClients(data.users || [])
+        const [clientsData, templatesData] = await Promise.all([
+          apiFetch<{ users?: User[] }>('/api/admin/users?role=CLIENT'),
+          fetchTemplates().catch(() => []),
+        ])
+        setClients(clientsData.users || [])
+        setTemplates(templatesData)
       } catch (err: unknown) {
         setError((err as Error).message || 'Erreur chargement comptes')
       }
     }
     load()
   }, [])
+
+  const applyTemplate = (templateId: string) => {
+    const t = templates.find((tpl) => tpl._id === templateId)
+    if (!t) return
+    setForm((prev) => ({
+      ...prev,
+      description: t.description || prev.description,
+      serviceTypes: t.serviceTypes.length > 0 ? t.serviceTypes : prev.serviceTypes,
+      deliverableTypes: t.deliverableTypes.length > 0 ? t.deliverableTypes : prev.deliverableTypes,
+      tags: t.tags.length > 0 ? t.tags : prev.tags,
+      priority: t.priority || prev.priority,
+      budget: t.budget?.amount ? { amount: t.budget.amount, currency: t.budget.currency || 'EUR', note: '' } : prev.budget,
+    }))
+  }
 
   const addServiceType = () => {
     const v = serviceTypeInput.trim()
@@ -204,6 +225,29 @@ const ProjectForm = () => {
       </div>
 
       <form onSubmit={handleSubmit}>
+        {templates.length > 0 && (
+          <div className="project-form-section" style={{ marginBottom: 16 }}>
+            <div className="project-form-section-header">
+              <div className="project-form-section-icon">{'\u{1F4CB}'}</div>
+              <div>
+                <h2 className="project-form-section-title">Template</h2>
+                <p className="project-form-section-subtitle">Pre-remplir a partir d'un modele existant</p>
+              </div>
+            </div>
+            <div className="portal-list">
+              <select
+                className="portal-input"
+                defaultValue=""
+                onChange={(e) => { if (e.target.value) applyTemplate(e.target.value) }}
+              >
+                <option value="">-- Aucun template (formulaire vide) --</option>
+                {templates.map((t) => (
+                  <option key={t._id} value={t._id}>{t.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
         <div className="project-form-container">
           {/* Section 1: Informations de base */}
           <div className="project-form-section">

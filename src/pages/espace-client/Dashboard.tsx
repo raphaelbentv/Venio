@@ -6,6 +6,10 @@ import { SkeletonStat, SkeletonGrid } from '../../components/Skeleton'
 import type { Project } from '../../types/project.types'
 import './ClientPortal.css'
 
+interface TaskProgressMap {
+  [projectId: string]: { total: number; done: number; percent: number }
+}
+
 const statusLabels: Record<string, string> = {
   EN_COURS: 'En cours',
   TERMINE: 'Terminé',
@@ -25,6 +29,7 @@ const ClientDashboard = () => {
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string>('')
+  const [taskProgress, setTaskProgress] = useState<TaskProgressMap>({})
   const [search, setSearch] = useState<string>('')
   const [statusFilter, setStatusFilter] = useState<string>('ALL')
   const [sortBy, setSortBy] = useState<string>('recent')
@@ -32,8 +37,12 @@ const ClientDashboard = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const data = await apiFetch<{ projects: Project[] }>('/api/projects')
-        setProjects(data.projects || [])
+        const [projectsData, progressData] = await Promise.all([
+          apiFetch<{ projects: Project[] }>('/api/projects'),
+          apiFetch<{ progress: TaskProgressMap }>('/api/projects/task-progress-all').catch(() => ({ progress: {} })),
+        ])
+        setProjects(projectsData.projects || [])
+        setTaskProgress(progressData.progress || {})
       } catch (err: unknown) {
         setError((err as Error).message || 'Erreur chargement projets')
       } finally {
@@ -291,6 +300,20 @@ const ClientDashboard = () => {
                         {project.serviceTypes.length > 3 && (
                           <span className="client-project-card-tag-more">+{project.serviceTypes.length - 3}</span>
                         )}
+                      </div>
+                    )}
+                    {taskProgress[project._id] && taskProgress[project._id].total > 0 && (
+                      <div className="client-project-card-progress">
+                        <div className="client-project-card-progress-header">
+                          <span className="client-project-card-progress-label">Avancement</span>
+                          <span className="client-project-card-progress-value">{taskProgress[project._id].percent}%</span>
+                        </div>
+                        <div className="client-project-card-progress-bar">
+                          <div
+                            className="client-project-card-progress-fill"
+                            style={{ width: `${taskProgress[project._id].percent}%` }}
+                          />
+                        </div>
                       </div>
                     )}
                     <div className="client-project-card-footer">

@@ -1,5 +1,5 @@
 import { apiFetch } from '../lib/api'
-import type { Task, TaskFormData } from '../types/task.types'
+import type { Task, TaskFormData, TaskComment } from '../types/task.types'
 
 export async function fetchTasks(projectId: string): Promise<Task[]> {
   const res = await apiFetch(`/api/admin/projects/${projectId}/tasks`) as { tasks: Task[] }
@@ -32,6 +32,25 @@ export async function moveTask(projectId: string, taskId: string, status: string
 
 export async function deleteTask(projectId: string, taskId: string): Promise<void> {
   await apiFetch(`/api/admin/projects/${projectId}/tasks/${taskId}`, {
+    method: 'DELETE',
+  })
+}
+
+export async function fetchComments(projectId: string, taskId: string): Promise<TaskComment[]> {
+  const res = await apiFetch(`/api/admin/projects/${projectId}/tasks/${taskId}/comments`) as { comments: TaskComment[] }
+  return res.comments
+}
+
+export async function addComment(projectId: string, taskId: string, content: string, mentions: string[] = []): Promise<TaskComment> {
+  const res = await apiFetch(`/api/admin/projects/${projectId}/tasks/${taskId}/comments`, {
+    method: 'POST',
+    body: JSON.stringify({ content, mentions }),
+  }) as { comment: TaskComment }
+  return res.comment
+}
+
+export async function deleteComment(projectId: string, taskId: string, commentId: string): Promise<void> {
+  await apiFetch(`/api/admin/projects/${projectId}/tasks/${taskId}/comments/${commentId}`, {
     method: 'DELETE',
   })
 }

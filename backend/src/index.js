@@ -20,6 +20,10 @@ import adminBillingRoutes from './routes/admin/billing.js'
 import adminCrmRoutes from './routes/admin/crm.js'
 import adminTaskRoutes from './routes/admin/tasks.js'
 import adminNotificationRoutes from './routes/admin/notifications.js'
+import adminDashboardRoutes from './routes/admin/dashboard.js'
+import adminSearchRoutes from './routes/admin/search.js'
+import adminTemplateRoutes from './routes/admin/templates.js'
+import adminAnalyticsRoutes from './routes/admin/analytics.js'
 import clientProjectContentRoutes from './routes/client/projectContent.js'
 import User from './models/User.js'
 import { startScheduler } from './lib/crmScheduler.js'
@@ -91,6 +95,10 @@ app.use('/api/admin/billing', adminBillingRoutes)
 app.use('/api/admin/crm', adminCrmRoutes)
 app.use('/api/admin/projects', adminTaskRoutes)
 app.use('/api/admin/notifications', adminNotificationRoutes)
+app.use('/api/admin/dashboard', adminDashboardRoutes)
+app.use('/api/admin/search', adminSearchRoutes)
+app.use('/api/admin/templates', adminTemplateRoutes)
+app.use('/api/admin/analytics', adminAnalyticsRoutes)
 
 // Routes client pour le contenu des projets
 app.use('/api/projects', clientProjectContentRoutes)
